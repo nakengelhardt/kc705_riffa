@@ -409,35 +409,30 @@ riffa_endpoint #(
 // do the same. You should feel free to manually instantiate
 // your custom IP cores here and remove the code below.
 
-genvar i;
-generate
-	for (i = 0; i < C_NUM_CHNL; i = i + 1) begin : test_channels
-		MovingAverage (
+Virtmem (
 			.clk(user_clk),
 			.rst(riffa_reset),	// riffa_reset includes riffa_endpoint resets
 			// rx interface
-			.chnl_rx_clk(chnl_rx_clk[i]), 
-			.chnl_rx(chnl_rx[i]), 
-			.chnl_rx_ack(chnl_rx_ack[i]), 
-			.chnl_rx_last(chnl_rx_last[i]), 
-			.chnl_rx_len(chnl_rx_len[32*i +:32]), 
-			.chnl_rx_off(chnl_rx_off[31*i +:31]), 
-			.chnl_rx_data(chnl_rx_data[C_DATA_WIDTH*i +:C_DATA_WIDTH]), 
-			.chnl_rx_data_valid(chnl_rx_data_valid[i]), 
-			.chnl_rx_data_ren(chnl_rx_data_ren[i]),
+			.chnl_rx_clk(chnl_rx_clk), 
+			.chnl_rx(chnl_rx), 
+			.chnl_rx_ack(chnl_rx_ack), 
+			.chnl_rx_last(chnl_rx_last), 
+			.chnl_rx_len(chnl_rx_len), 
+			.chnl_rx_off(chnl_rx_off), 
+			.chnl_rx_data(chnl_rx_data), 
+			.chnl_rx_data_valid(chnl_rx_data_valid), 
+			.chnl_rx_data_ren(chnl_rx_data_ren),
 			// tx interface
-			.chnl_tx_clk(chnl_tx_clk[i]), 
-			.chnl_tx(chnl_tx[i]), 
-			.chnl_tx_ack(chnl_tx_ack[i]), 
-			.chnl_tx_last(chnl_tx_last[i]), 
-			.chnl_tx_len(chnl_tx_len[32*i +:32]), 
-			.chnl_tx_off(chnl_tx_off[31*i +:31]), 
-			.chnl_tx_data(chnl_tx_data[C_DATA_WIDTH*i +:C_DATA_WIDTH]), 
-			.chnl_tx_data_valid(chnl_tx_data_valid[i]), 
-			.chnl_tx_data_ren(chnl_tx_data_ren[i])
+			.chnl_tx_clk(chnl_tx_clk), 
+			.chnl_tx(chnl_tx), 
+			.chnl_tx_ack(chnl_tx_ack), 
+			.chnl_tx_last(chnl_tx_last), 
+			.chnl_tx_len(chnl_tx_len), 
+			.chnl_tx_off(chnl_tx_off), 
+			.chnl_tx_data(chnl_tx_data), 
+			.chnl_tx_data_valid(chnl_tx_data_valid), 
+			.chnl_tx_data_ren(chnl_tx_data_ren)
 		) ;	
-	end
-endgenerate
 
 
 ////////////////////////////////////
