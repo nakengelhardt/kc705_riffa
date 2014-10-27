@@ -14,6 +14,7 @@ class GenericRiffa(Module):
 		self._max_channels = num_chnls
 		self._num_channels = 0
 		self.c_pci_data_width = c_pci_data_width
+		self.submodules.channelsplitter = riffa.ChannelSplitter(combined_interface_rx, combined_interface_tx)
 		if drive_clocks:
 			self.rx_clk = Signal(self._max_channels)
 			self.tx_clk = Signal(self._max_channels)
@@ -21,26 +22,8 @@ class GenericRiffa(Module):
 			self.comb += [ self.tx_clk[i].eq(ClockSignal()) for i in range(self._max_channels) ]
 
 
-	def get_channel(self):	
-		if self._num_channels < self._max_channels:
-			channel_rx = riffa.Interface(data_width=self.c_pci_data_width)
-			channel_tx = riffa.Interface(data_width=self.c_pci_data_width)
-			for name in "start", "last", "data_valid":
-				self.comb += getattr(self.combined_interface_tx, name)[self._num_channels].eq(getattr(channel_tx, name))
-				self.comb += getattr(channel_rx, name).eq(getattr(self.combined_interface_rx, name)[self._num_channels])
-			for name in "ack", "data_ren":
-				self.comb += getattr(channel_tx, name).eq(getattr(self.combined_interface_tx, name)[self._num_channels])
-				self.comb += getattr(self.combined_interface_rx, name)[self._num_channels].eq(getattr(channel_rx, name))
-			self.comb += self.combined_interface_tx.data[self._num_channels*self.c_pci_data_width:(self._num_channels+1)*self.c_pci_data_width].eq(channel_tx.data)
-			self.comb += channel_rx.data.eq(self.combined_interface_rx.data[self._num_channels*self.c_pci_data_width:(self._num_channels+1)*self.c_pci_data_width])
-			self.comb += self.combined_interface_tx.len[self._num_channels*32:(self._num_channels+1)*32].eq(channel_tx.len)
-			self.comb += channel_rx.len.eq(self.combined_interface_rx.len[self._num_channels*32:(self._num_channels+1)*32])
-			self.comb += self.combined_interface_tx.off[self._num_channels*31:(self._num_channels+1)*31].eq(channel_tx.off)
-			self.comb += channel_rx.off.eq(self.combined_interface_rx.off[self._num_channels*31:(self._num_channels+1)*31])
-			self._num_channels += 1
-			return channel_rx, channel_tx
-		else:
-			raise ValueError("No more channels fit in combined interface")
+	def get_channel(self, i):
+		return self.channelsplitter.get_channel(i)
 
 
 class Virtmem(Module):
@@ -104,9 +87,9 @@ class VirtmemWrapper(GenericRiffa):
 		if drive_clocks:
 			self.clock_domains.cd_sys = ClockDomain()
 
-		rx0, tx0 = self.get_channel()
-		rx1, tx1 = self.get_channel()
-		rx2, tx2 = self.get_channel()
+		rx0, tx0 = self.get_channel(0)
+		rx1, tx1 = self.get_channel(1)
+		rx2, tx2 = self.get_channel(2)
 		#self.submodules.virtmem = Virtmem(rx0, tx0, rx1, tx1, c_pci_data_width=32, wordsize=wordsize, ptrsize=ptrsize)
 
 		fsm = FSM()
