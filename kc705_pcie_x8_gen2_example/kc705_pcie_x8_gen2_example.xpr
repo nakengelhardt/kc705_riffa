@@ -16,505 +16,631 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../riffa_hdl/ff.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/ff.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/ff.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/syncff.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/syncff.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/syncff.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/common_functions.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/common_functions.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/common_functions.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/ram_2clk_1w_1r.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/ram_2clk_1w_1r.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/ram_2clk_1w_1r.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/ram_1clk_1w_1r.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/ram_1clk_1w_1r.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/ram_1clk_1w_1r.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/sync_fifo.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/sync_fifo.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/sync_fifo.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/cross_domain_signal.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/cross_domain_signal.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/cross_domain_signal.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/async_fifo.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/async_fifo.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/async_fifo.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_writer.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_writer.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_writer.v"/>
+          <Attr Name="ImportTime" Val="1401853286"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_monitor_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_monitor_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_monitor_64.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_monitor_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_monitor_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_monitor_32.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_monitor_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_monitor_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_monitor_128.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_channel_gate_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_channel_gate_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_channel_gate_64.v"/>
+          <Attr Name="ImportTime" Val="1401865130"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_channel_gate_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_channel_gate_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_channel_gate_32.v"/>
+          <Attr Name="ImportTime" Val="1401865120"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_channel_gate_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_channel_gate_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_channel_gate_128.v"/>
+          <Attr Name="ImportTime" Val="1401865110"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_buffer_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_buffer_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_buffer_64.v"/>
+          <Attr Name="ImportTime" Val="1401865202"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_buffer_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_buffer_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_buffer_32.v"/>
+          <Attr Name="ImportTime" Val="1401865192"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_buffer_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_buffer_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_buffer_128.v"/>
+          <Attr Name="ImportTime" Val="1401865184"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_selector.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_selector.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_selector.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_formatter_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_formatter_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_formatter_64.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_formatter_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_formatter_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_formatter_32.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_formatter_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_formatter_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_formatter_128.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/sg_list_requester.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/sg_list_requester.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/sg_list_requester.v"/>
+          <Attr Name="ImportTime" Val="1401850918"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/sg_list_reader_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/sg_list_reader_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/sg_list_reader_64.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/sg_list_reader_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/sg_list_reader_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/sg_list_reader_32.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/sg_list_reader_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/sg_list_reader_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/sg_list_reader_128.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_requester_mux.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_requester_mux.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_requester_mux.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_reader.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_reader.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_reader.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_channel_gate.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_channel_gate.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_channel_gate.v"/>
+          <Attr Name="ImportTime" Val="1398821124"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/reorder_queue_output.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/reorder_queue_output.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/reorder_queue_output.v"/>
+          <Attr Name="ImportTime" Val="1399367734"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/reorder_queue_input.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/reorder_queue_input.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/reorder_queue_input.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/fifo_packer_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/fifo_packer_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/fifo_packer_64.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/fifo_packer_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/fifo_packer_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/fifo_packer_32.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/fifo_packer_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/fifo_packer_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/fifo_packer_128.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/async_fifo_fwft.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/async_fifo_fwft.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/async_fifo_fwft.v"/>
+          <Attr Name="ImportTime" Val="1388740998"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_qword_aligner_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_qword_aligner_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_qword_aligner_64.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_qword_aligner_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_qword_aligner_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_qword_aligner_128.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_64.v"/>
+          <Attr Name="ImportTime" Val="1401852820"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_32.v"/>
+          <Attr Name="ImportTime" Val="1401852810"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_port_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_port_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_port_128.v"/>
+          <Attr Name="ImportTime" Val="1401852802"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_upper_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_upper_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_upper_64.v"/>
+          <Attr Name="ImportTime" Val="1402020034"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_upper_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_upper_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_upper_32.v"/>
+          <Attr Name="ImportTime" Val="1401852746"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_upper_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_upper_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_upper_128.v"/>
+          <Attr Name="ImportTime" Val="1401959072"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_lower_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_lower_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_lower_64.v"/>
+          <Attr Name="ImportTime" Val="1401852662"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_lower_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_lower_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_lower_32.v"/>
+          <Attr Name="ImportTime" Val="1401955612"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_lower_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_lower_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_lower_128.v"/>
+          <Attr Name="ImportTime" Val="1401852464"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_64.v"/>
+          <Attr Name="ImportTime" Val="1401865278"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_32.v"/>
+          <Attr Name="ImportTime" Val="1401865254"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_port_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_port_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_port_128.v"/>
+          <Attr Name="ImportTime" Val="1401865236"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_engine_req.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_engine_req.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_engine_req.v"/>
+          <Attr Name="ImportTime" Val="1401865080"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/reorder_queue.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/reorder_queue.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/reorder_queue.v"/>
+          <Attr Name="ImportTime" Val="1401865308"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/interrupt_controller.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/interrupt_controller.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/interrupt_controller.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_64.v"/>
+          <Attr Name="ImportTime" Val="1401955592"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_32.v"/>
+          <Attr Name="ImportTime" Val="1401955560"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/tx_engine_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/tx_engine_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/tx_engine_128.v"/>
+          <Attr Name="ImportTime" Val="1401865350"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/translation_layer_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/translation_layer_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/translation_layer_64.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/translation_layer_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/translation_layer_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/translation_layer_32.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/translation_layer_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/translation_layer_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/translation_layer_128.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_engine_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_engine_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_engine_64.v"/>
+          <Attr Name="ImportTime" Val="1401849740"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_engine_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_engine_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_engine_32.v"/>
+          <Attr Name="ImportTime" Val="1401842934"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/rx_engine_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/rx_engine_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/rx_engine_128.v"/>
+          <Attr Name="ImportTime" Val="1401850676"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/interrupt.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/interrupt.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/interrupt.v"/>
+          <Attr Name="ImportTime" Val="1401955378"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/demux_1_to_n.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/demux_1_to_n.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/demux_1_to_n.v"/>
+          <Attr Name="ImportTime" Val="1378779846"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/channel_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/channel_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/channel_64.v"/>
+          <Attr Name="ImportTime" Val="1401843086"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/channel_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/channel_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/channel_32.v"/>
+          <Attr Name="ImportTime" Val="1401843072"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/channel_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/channel_128.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/channel_128.v"/>
+          <Attr Name="ImportTime" Val="1401843100"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/translation_layer.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/translation_layer.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/translation_layer.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/riffa_endpoint_64.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/riffa_endpoint_64.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/riffa_endpoint_64.v"/>
+          <Attr Name="ImportTime" Val="1402020000"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/riffa_endpoint_32.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/riffa_endpoint_32.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/riffa_endpoint_32.v"/>
+          <Attr Name="ImportTime" Val="1401955466"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/riffa_endpoint_128.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/riffa_endpoint_128.v">
         <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../virtmem.v">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../riffa_hdl/riffa_endpoint.v">
-        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/riffa_endpoint_128.v"/>
+          <Attr Name="ImportTime" Val="1401959036"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -536,8 +662,19 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_adapter_pcie_7x_v2_1.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/riffa_endpoint.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/riffa_endpoint.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/movingaverage.v">
+        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../movingaverage.v"/>
+          <Attr Name="ImportTime" Val="1414392693"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -552,22 +689,47 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_top_pcie_7x_v2_1.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_adapter_pcie_7x_v2_1.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_adapter_pcie_7x_v2_1.v"/>
+          <Attr Name="ImportTime" Val="1414395200"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/chnl_tester.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_top_pcie_7x_v2_1.v">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_top_pcie_7x_v2_1.v"/>
+          <Attr Name="ImportTime" Val="1408875324"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../riffa_hdl/translation_layer_256.v">
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/virtmem.v">
         <FileInfo>
+          <Attr Name="UserDisabled" Val="1"/>
+          <Attr Name="ImportPath" Val="$PPRDIR/../virtmem.v"/>
+          <Attr Name="ImportTime" Val="1414390806"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/chnl_tester.v">
+        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/chnl_tester.v"/>
+          <Attr Name="ImportTime" Val="1399358852"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/imports/kc705_clean/riffa_hdl/translation_layer_256.v">
+        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../riffa_hdl/translation_layer_256.v"/>
+          <Attr Name="ImportTime" Val="1404792334"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>

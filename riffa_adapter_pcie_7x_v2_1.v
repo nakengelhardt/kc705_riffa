@@ -62,7 +62,7 @@
 module pcie_app_7x #(
 	parameter C_DATA_WIDTH = 128,	// RX/TX interface data width
 	parameter TCQ = 1,
-	parameter C_NUM_CHNL = 4'd2, 			// Number of RIFFA channels (set as needed: 1-12)
+	parameter C_NUM_CHNL = 4'd3, 			// Number of RIFFA channels (set as needed: 1-12)
 	parameter C_MAX_READ_REQ_BYTES = 512,	// Max size of read requests (in bytes). Setting this higher than PCIe Endpoint's MAX READ value just wastes resources
 	parameter C_TAG_WIDTH = 5 				// Number of outstanding tag requests
 )
@@ -409,7 +409,7 @@ riffa_endpoint #(
 // do the same. You should feel free to manually instantiate
 // your custom IP cores here and remove the code below.
 
-Virtmem (
+top (
 			.clk(user_clk),
 			.rst(riffa_reset),	// riffa_reset includes riffa_endpoint resets
 			// rx interface

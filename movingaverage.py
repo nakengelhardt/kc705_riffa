@@ -73,26 +73,23 @@ class RiffAverage(Module):
 
 		###
 
-		rlen = Signal(32)
+		if drive_clocks:
+			self.clock_domains.cd_sys = ClockDomain()
+			self.comb += self.chnl_rx_clk.eq(self.cd_sys.clk), self.chnl_tx_clk.eq(self.cd_sys.clk)
+		
 		rcount = Signal(32)
 		rcount_n = Signal(32)
 		rcount_en = Signal()
 
 		self.sync += If(rcount_en, rcount.eq(rcount_n))
 
-		# avg = MovingAverage(n=firorder,wordsize=wordsize,nsamples=c_pci_data_width//wordsize)
-		# self.submodules += avg
+		tcount = Signal(32)
+		tcount_n = Signal(32)
+		tcount_en = Signal()
 
-		self.comb += self.chnl_tx_last.eq(1), \
-			self.chnl_tx_off.eq(0), \
-			self.chnl_tx_len.eq(rlen)#, \
-			#avg.sample_in.eq(self.chnl_rx_data), \
-			#[self.chnl_tx_data[i*wordsize:(i+1)*wordsize].eq(avg.average) for i in range(c_pci_data_width//wordsize)]
-		
-		if drive_clocks:
-			self.clock_domains.cd_sys = ClockDomain()
-			self.comb += self.chnl_rx_clk.eq(self.cd_sys.clk), self.chnl_tx_clk.eq(self.cd_sys.clk)
+		self.sync += If(tcount_en, tcount.eq(tcount_n))
 
+		rlen = Signal(32)
 		rlen_load = Signal()
 		self.sync += If(rlen_load, rlen.eq(self.chnl_rx_len))
 
@@ -102,45 +99,41 @@ class RiffAverage(Module):
 		fsm = FSM()
 		self.submodules += fsm
 
-
+		self.comb += self.chnl_tx_off.eq(0)
 
 		fsm.act("IDLE",
+			rcount_n.eq(0),
+			rcount_en.eq(1),
+			tcount_n.eq(0),
+			tcount_en.eq(1),
 			If(self.chnl_rx,
 				rlen_load.eq(1),
-				rcount_n.eq(0),
-				rcount_en.eq(1),
 				NextState("RECEIVING")
 			)
 		)
-		# self.comb += self.chnl_rx_ack.eq(fsm.after_entering("RECEIVING"))
 		fsm.act("RECEIVING",
 			self.chnl_rx_ack.eq(1),
-			self.chnl_rx_data_ren.eq(1),
 			If(self.chnl_rx_data_valid,
 				rcount_n.eq(rcount + c_pci_data_width//wordsize),
-				rcount_en.eq(1)
-				# avg.sample_valid.eq(1),
-				
-			),
-			If(rcount >= rlen,
-				NextState("PREPARE_TX")
-			)
-		)
-		fsm.act("PREPARE_TX",
-			rcount_n.eq(0),
-			rcount_en.eq(1),
-			NextState("TRANSMITTING")
-		)
-
-		fsm.act("TRANSMITTING",
-			self.chnl_tx.eq(1),
-			self.chnl_tx_data_valid.eq(1),
-			If(self.chnl_tx_data_ren,
-				[self.chnl_tx_data[i*wordsize:(i+1)*wordsize].eq(rcount + i + 1) for i in range(c_pci_data_width//wordsize)],
-				rcount_n.eq(rcount + c_pci_data_width//wordsize),
 				rcount_en.eq(1),
-				If(rcount >= rlen, 
+				self.chnl_rx_data_ren.eq(1),
+				NextState("TRANSMITTING")
+			),
+		)
+		fsm.act("TRANSMITTING",
+			#TODO: next test, split in 2 transactions of half length
+			self.chnl_tx.eq(1),
+			[self.chnl_tx_data[i*wordsize:(i+1)*wordsize].eq(tcount + i + 1) for i in range(c_pci_data_width//wordsize)],
+			self.chnl_tx_len.eq(c_pci_data_width//wordsize), #TODO: calculate if only 1 at end
+			self.chnl_tx_data_valid.eq(1),
+			self.chnl_tx_last.eq(1),
+			If(self.chnl_tx_data_ren,
+				tcount_n.eq(tcount + c_pci_data_width//wordsize),
+				tcount_en.eq(1),
+				If(tcount >= rlen, 
 					NextState("IDLE")
+				).Else(
+					NextState("RECEIVING")
 				)
 			)
 		)
@@ -152,7 +145,7 @@ def main():
 	m = RiffAverage(c_pci_data_width=128)
 	m.cd_sys.clk.name_override="clk"
 	m.cd_sys.rst.name_override="rst"
-	print(verilog.convert(m, name="MovingAverage", ios={
+	print(verilog.convert(m, name="top", ios={
 		m.chnl_rx_clk,
 		m.chnl_rx,
 		m.chnl_rx_ack,

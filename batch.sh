@@ -1,7 +1,7 @@
 #!/bin/bash
 
 XIL_SETTINGS=/opt/Xilinx/Vivado/2014.2/settings64.sh
-MIGEN_SRCS=virtmem
+MIGEN_SRCS="virtmem movingaverage"
 
 PROJ_DIR=/home/nengel/Documents/development/Riffa/riffa_2.1/source/fpga/kc705_clean
 PROJ_NAME=kc705_pcie_x8_gen2_example
