@@ -5,6 +5,7 @@ from migen.genlib.fsm import FSM, NextState
 
 from migen.fhdl import verilog
 
+import riffa
 
 # class MovingAverage(Module):
 # 	def __init__(self,n=7,wordsize=32,nsamples=1):
@@ -52,24 +53,10 @@ class RiffAverage(Module):
 		firorder = 7
 		wordsize = 32
 		self.chnl_rx_clk = Signal()
-		self.chnl_rx = Signal()
-		self.chnl_rx_ack = Signal()
-		self.chnl_rx_last = Signal()
-		self.chnl_rx_len = Signal(wordsize)
-		self.chnl_rx_off = Signal(wordsize-1)
-		self.chnl_rx_data = Signal(c_pci_data_width)
-		self.chnl_rx_data_valid = Signal()
-		self.chnl_rx_data_ren = Signal()
-
 		self.chnl_tx_clk = Signal()
-		self.chnl_tx = Signal()
-		self.chnl_tx_ack = Signal()
-		self.chnl_tx_last = Signal()
-		self.chnl_tx_len = Signal(wordsize)
-		self.chnl_tx_off = Signal(wordsize-1)
-		self.chnl_tx_data = Signal(c_pci_data_width)
-		self.chnl_tx_data_valid = Signal()
-		self.chnl_tx_data_ren = Signal()
+
+		self.chnl_rx = riffa.Interface(data_width=c_pci_data_width)
+		self.chnl_tx = riffa.Interface(data_width=c_pci_data_width)
 
 		###
 
@@ -91,43 +78,43 @@ class RiffAverage(Module):
 
 		rlen = Signal(32)
 		rlen_load = Signal()
-		self.sync += If(rlen_load, rlen.eq(self.chnl_rx_len))
+		self.sync += If(rlen_load, rlen.eq(self.chnl_rx.len))
 
 		rdata = Signal(c_pci_data_width)
-		self.sync += If(self.chnl_rx_data_valid, rdata.eq(self.chnl_rx_data))
+		self.sync += If(self.chnl_rx.data_valid, rdata.eq(self.chnl_rx.data))
 
 		fsm = FSM()
 		self.submodules += fsm
 
-		self.comb += self.chnl_tx_off.eq(0)
+		self.comb += self.chnl_tx.off.eq(0)
 
 		fsm.act("IDLE",
 			rcount_n.eq(0),
 			rcount_en.eq(1),
 			tcount_n.eq(0),
 			tcount_en.eq(1),
-			If(self.chnl_rx,
+			If(self.chnl_rx.start,
 				rlen_load.eq(1),
 				NextState("RECEIVING")
 			)
 		)
 		fsm.act("RECEIVING",
-			self.chnl_rx_ack.eq(1),
-			If(self.chnl_rx_data_valid,
+			self.chnl_rx.ack.eq(1),
+			If(self.chnl_rx.data_valid,
 				rcount_n.eq(rcount + c_pci_data_width//wordsize),
 				rcount_en.eq(1),
-				self.chnl_rx_data_ren.eq(1),
+				self.chnl_rx.data_ren.eq(1),
 				NextState("TRANSMITTING")
 			),
 		)
 		fsm.act("TRANSMITTING",
 			#TODO: next test, split in 2 transactions of half length
-			self.chnl_tx.eq(1),
-			[self.chnl_tx_data[i*wordsize:(i+1)*wordsize].eq(tcount + i + 1) for i in range(c_pci_data_width//wordsize)],
-			self.chnl_tx_len.eq(c_pci_data_width//wordsize), #TODO: calculate if only 1 at end
-			self.chnl_tx_data_valid.eq(1),
-			self.chnl_tx_last.eq(1),
-			If(self.chnl_tx_data_ren,
+			self.chnl_tx.start.eq(1),
+			[self.chnl_tx.data[i*wordsize:(i+1)*wordsize].eq(tcount + i + 1) for i in range(c_pci_data_width//wordsize)],
+			self.chnl_tx.len.eq(c_pci_data_width//wordsize), #TODO: calculate if only 1 at end
+			self.chnl_tx.data_valid.eq(1),
+			self.chnl_tx.last.eq(1),
+			If(self.chnl_tx.data_ren,
 				tcount_n.eq(tcount + c_pci_data_width//wordsize),
 				tcount_en.eq(1),
 				If(tcount >= rlen, 
@@ -145,25 +132,31 @@ def main():
 	m = RiffAverage(c_pci_data_width=128)
 	m.cd_sys.clk.name_override="clk"
 	m.cd_sys.rst.name_override="rst"
+	for name in "ack", "last", "len", "off", "data", "data_valid", "data_ren":
+		getattr(m.chnl_rx, name).name_override="chnl_rx_{}".format(name)
+		getattr(m.chnl_tx, name).name_override="chnl_tx_{}".format(name)
+	m.chnl_rx.start.name_override="chnl_rx"
+	m.chnl_tx.start.name_override="chnl_tx"
+
 	print(verilog.convert(m, name="top", ios={
 		m.chnl_rx_clk,
-		m.chnl_rx,
-		m.chnl_rx_ack,
-		m.chnl_rx_last,
-		m.chnl_rx_len,
-		m.chnl_rx_off,
-		m.chnl_rx_data,
-		m.chnl_rx_data_valid,
-		m.chnl_rx_data_ren,
+		m.chnl_rx.start,
+		m.chnl_rx.ack,
+		m.chnl_rx.last,
+		m.chnl_rx.len,
+		m.chnl_rx.off,
+		m.chnl_rx.data,
+		m.chnl_rx.data_valid,
+		m.chnl_rx.data_ren,
 		m.chnl_tx_clk,
-		m.chnl_tx,
-		m.chnl_tx_ack,
-		m.chnl_tx_last,
-		m.chnl_tx_len,
-		m.chnl_tx_off,
-		m.chnl_tx_data,
-		m.chnl_tx_data_valid,
-		m.chnl_tx_data_ren,
+		m.chnl_tx.start,
+		m.chnl_tx.ack,
+		m.chnl_tx.last,
+		m.chnl_tx.len,
+		m.chnl_tx.off,
+		m.chnl_tx.data,
+		m.chnl_tx.data_valid,
+		m.chnl_tx.data_ren,
 		m.cd_sys.clk,
 		m.cd_sys.rst}))
 

@@ -159,7 +159,7 @@ class VirtmemWrapper(GenericRiffa):
 				ndatareq_n.eq(0),
 				ndatareq_en.eq(1),
 				# NextState("REQ_DATA")
-				[tdata_n[i].eq(i) for i in range(c_pci_data_width//wordsize)],
+				[tdata_n[i].eq(1) for i in range(c_pci_data_width//wordsize)],
 				[tdata_en[i].eq(1) for i in range(c_pci_data_width//wordsize)],				
 				NextState("TRANSMIT")
 			)

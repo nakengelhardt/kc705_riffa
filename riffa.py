@@ -40,13 +40,53 @@ class ChannelSplitter(Module):
 			for name in "ack", "data_ren":
 				self.comb += getattr(channel_s, name).eq(getattr(self.combined_slave, name)[i])
 				self.comb += getattr(self.combined_master, name)[i].eq(getattr(channel_m, name))
-				self.comb += self.combined_slave.data[i*self.data_width:(i+1)*self.data_width].eq(channel_s.data)
-				self.comb += channel_m.data.eq(self.combined_master.data[i*self.data_width:(i+1)*self.data_width])
-				self.comb += self.combined_slave.len[i*32:(i+1)*32].eq(channel_s.len)
-				self.comb += channel_m.len.eq(self.combined_master.len[i*32:(i+1)*32])
-				self.comb += self.combined_slave.off[i*31:(i+1)*31].eq(channel_s.off)
-				self.comb += channel_m.off.eq(self.combined_master.off[i*31:(i+1)*31])
+			self.comb += self.combined_slave.data[i*self.data_width:(i+1)*self.data_width].eq(channel_s.data)
+			self.comb += channel_m.data.eq(self.combined_master.data[i*self.data_width:(i+1)*self.data_width])
+			self.comb += self.combined_slave.len[i*32:(i+1)*32].eq(channel_s.len)
+			self.comb += channel_m.len.eq(self.combined_master.len[i*32:(i+1)*32])
+			self.comb += self.combined_slave.off[i*31:(i+1)*31].eq(channel_s.off)
+			self.comb += channel_m.off.eq(self.combined_master.off[i*31:(i+1)*31])
 			self.subchannels[i] = (channel_m, channel_s)
 
 	def get_channel(self, i):
 		return self.subchannels[i]
+
+
+def channel_write(channelp, words):
+	channelp.start = 1
+	channelp.last = 1
+	channelp.len = len(words)
+	channelp.off = 0
+	while not channelp.ack:
+		yield
+	for word in words:
+		print("Sending data " + str(word))
+		channelp.data = word
+		channelp.data_valid = 1
+		yield
+		while not channelp.data_ren:
+			yield
+	channelp.start = 0
+	channelp.last = 0
+	channelp.len = 0
+	channelp.data = 0
+	channelp.data_valid = 0
+
+def channel_read(channelp):
+	words = []
+	while not channelp.start:
+		yield
+	nwords = channelp.len
+	channelp.ack = 1
+	yield
+	channelp.ack = 0
+	yield
+	for i in range(nwords):
+		while not channelp.data_valid:
+			yield
+		words.append(channelp.data)
+		channelp.data_ren = 1
+		yield
+		channelp.data_ren = 0
+		yield
+	return words
