@@ -52,41 +52,41 @@ class ChannelSplitter(Module):
 		return self.subchannels[i]
 
 
-def channel_write(channelp, words):
-	channelp.start = 1
-	channelp.last = 1
-	channelp.len = len(words)
-	channelp.off = 0
-	while not channelp.ack:
+def channel_write(sim, channel, words):
+	sim.wr(channel.start, 1)
+	sim.wr(channel.last, 1)
+	sim.wr(channel.len, len(words))
+	sim.wr(channel.off, 0)
+	while not sim.rd(channel.ack):
 		yield
 	for word in words:
 		print("Sending data " + str(word))
-		channelp.data = word
-		channelp.data_valid = 1
+		sim.wr(channel.data, word)
+		sim.wr(channel.data_valid, 1)
 		yield
-		while not channelp.data_ren:
+		while not sim.rd(channel.data_ren):
 			yield
-	channelp.start = 0
-	channelp.last = 0
-	channelp.len = 0
-	channelp.data = 0
-	channelp.data_valid = 0
+	sim.wr(channel.start, 0)
+	sim.wr(channel.last, 0)
+	sim.wr(channel.len, 0)
+	sim.wr(channel.data, 0)
+	sim.wr(channel.data_valid, 0)
 
-def channel_read(channelp):
+def channel_read(sim, channel):
 	words = []
-	while not channelp.start:
+	while not sim.rd(channel.start):
 		yield
-	nwords = channelp.len
-	channelp.ack = 1
+	nwords = sim.rd(channel.len)
+	sim.wr(channel.ack, 1)
 	yield
-	channelp.ack = 0
+	sim.wr(channel.ack, 0)
 	yield
 	for i in range(nwords):
-		while not channelp.data_valid:
+		while not sim.rd(channel.data_valid):
 			yield
-		words.append(channelp.data)
-		channelp.data_ren = 1
+		words.append(sim.rd(channel.data))
+		sim.wr(channel.data_ren, 1)
 		yield
-		channelp.data_ren = 0
+		sim.wr(channel.data_ren, 0)
 		yield
 	return words
