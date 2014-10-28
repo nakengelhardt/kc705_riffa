@@ -23,6 +23,7 @@ class Interface(Record):
 		self.num_chnls = num_chnls
 		self.data_width = data_width
 
+
 class ChannelSplitter(Module):
 	def __init__(self, combined_master, combined_slave):
 		self.combined_master = combined_master
@@ -52,20 +53,38 @@ class ChannelSplitter(Module):
 		return self.subchannels[i]
 
 
+def pack(words):
+	data = 0
+	for i, word in enumerate(words):
+		data = data | ((word & 0xFFFFFFFF) << i*32)
+	return data
+
+def unpack(data, n):
+	words = []
+	for i in range(n):
+		words.append((data >> i*32) & 0xFFFFFFFF)
+	return words
+
 def channel_write(sim, channel, words):
+	wordsize = 32
+	channelwidth = channel.data_width//wordsize
+	nwords = len(words)
 	sim.wr(channel.start, 1)
 	sim.wr(channel.last, 1)
-	sim.wr(channel.len, len(words))
+	sim.wr(channel.len, nwords)
 	sim.wr(channel.off, 0)
+	nsent = 0
 	while not sim.rd(channel.ack):
 		yield
-	for word in words:
-		print("Sending data " + str(word))
-		sim.wr(channel.data, word)
+	while nsent < nwords:
+		data = pack(words[nsent:min(nsent+channelwidth, nwords)])
+		print("Sending data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:x})".format(data))
+		sim.wr(channel.data, data)
 		sim.wr(channel.data_valid, 1)
 		yield
 		while not sim.rd(channel.data_ren):
 			yield
+		nsent += channelwidth
 	sim.wr(channel.start, 0)
 	sim.wr(channel.last, 0)
 	sim.wr(channel.len, 0)
@@ -73,18 +92,25 @@ def channel_write(sim, channel, words):
 	sim.wr(channel.data_valid, 0)
 
 def channel_read(sim, channel):
+	wordsize = 32
+	channelwidth = channel.data_width//wordsize
 	words = []
 	while not sim.rd(channel.start):
 		yield
 	nwords = sim.rd(channel.len)
+	nrecvd = 0
 	sim.wr(channel.ack, 1)
 	yield
 	sim.wr(channel.ack, 0)
 	yield
-	for i in range(nwords):
+	while nrecvd < nwords:
+		# print("Waiting for data word #" + str(nrecvd))
 		while not sim.rd(channel.data_valid):
 			yield
-		words.append(sim.rd(channel.data))
+		data = sim.rd(channel.data)
+		print("Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:x})".format(data))
+		words.extend(unpack(data, min(channelwidth, nwords-nrecvd)))
+		nrecvd += channelwidth
 		sim.wr(channel.data_ren, 1)
 		yield
 		sim.wr(channel.data_ren, 0)

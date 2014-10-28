@@ -8,7 +8,7 @@ class Writer(Module):
 		self.channel = channel
 
 	def gen_simulation(self, selfp):
-		yield from riffa.channel_write(selfp.simulator, self.channel, [i+1337 for i in range(4)])
+		yield from riffa.channel_write(selfp.simulator, self.channel, [i+1337 for i in range(17)])
 		yield
 		yield
 		yield
@@ -26,7 +26,7 @@ class Reader(Module):
 
 class RiffaTB(Module):
 	def __init__(self):
-		channel = riffa.Interface()
+		channel = riffa.Interface(data_width=128)
 		dummy = Signal()
 		self.comb += dummy.eq(channel.raw_bits())
 		self.submodules.writer = Writer(channel)

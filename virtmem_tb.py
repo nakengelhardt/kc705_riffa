@@ -9,7 +9,7 @@ class Writer(Module):
 		self.channel = channel
 
 	def gen_simulation(self, selfp):
-		yield from riffa.channel_write(selfp.simulator, self.channel, [i+1337 for i in range(4)])
+		yield from riffa.channel_write(selfp.simulator, self.channel, [i+1337 for i in range(17)])
 		yield
 		yield
 		yield
@@ -21,8 +21,7 @@ class Reader(Module):
 	def gen_simulation(self, selfp):
 		while True:
 			words = yield from riffa.channel_read(selfp.simulator, self.channel)
-			for word in words:
-				print("{0:032x}".format(word))
+			print(words)
 	gen_simulation.passive = True
 
 class TB(Module):
