@@ -14,7 +14,7 @@ movingaverage.v
 
 #simulation files
 sim_1/
-
+*.vcd
 
 ## Python Gitignore ##
 # Byte-compiled / optimized / DLL files

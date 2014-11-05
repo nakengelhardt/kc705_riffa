@@ -17,11 +17,12 @@ _layout = [
 ]
 
 class Interface(Record):
-	def __init__(self, num_chnls=1, data_width=32):
+	def __init__(self, num_chnls=1, data_width=32, channel_number=None):
 		Record.__init__(self, set_layout_parameters(_layout,
 			num_chnls=num_chnls, num_chnls_x_32=32*num_chnls, num_chnls_x_31=31*num_chnls, data_width_x_num_chnls=data_width*num_chnls))
 		self.num_chnls = num_chnls
 		self.data_width = data_width
+		self.channel_number = channel_number
 
 
 class ChannelSplitter(Module):
@@ -33,8 +34,8 @@ class ChannelSplitter(Module):
 
 		self.subchannels = {}
 		for i in range(combined_master.num_chnls):
-			channel_m = Interface(data_width=self.data_width)
-			channel_s = Interface(data_width=self.data_width)
+			channel_m = Interface(data_width=self.data_width, channel_number=i)
+			channel_s = Interface(data_width=self.data_width, channel_number=i)
 			for name in "start", "last", "data_valid":
 				self.comb += getattr(self.combined_slave, name)[i].eq(getattr(channel_s, name))
 				self.comb += getattr(channel_m, name).eq(getattr(self.combined_master, name)[i])
@@ -78,12 +79,12 @@ def channel_write(sim, channel, words):
 		yield
 	while nsent < nwords:
 		data = pack(words[nsent:min(nsent+channelwidth, nwords)])
-		print("Sending data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:x})".format(data))
 		sim.wr(channel.data, data)
 		sim.wr(channel.data_valid, 1)
 		yield
 		while not sim.rd(channel.data_ren):
 			yield
+		print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Sent data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:032x})".format(data))
 		nsent += channelwidth
 	sim.wr(channel.start, 0)
 	sim.wr(channel.last, 0)
@@ -95,8 +96,10 @@ def channel_read(sim, channel):
 	wordsize = 32
 	channelwidth = channel.data_width//wordsize
 	words = []
+	# print("Waiting for transaction start on channel {0}...".format(str(channel)))
 	while not sim.rd(channel.start):
 		yield
+	# print("Transaction started")
 	nwords = sim.rd(channel.len)
 	nrecvd = 0
 	sim.wr(channel.ack, 1)
@@ -108,7 +111,7 @@ def channel_read(sim, channel):
 		while not sim.rd(channel.data_valid):
 			yield
 		data = sim.rd(channel.data)
-		print("Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:x})".format(data))
+		print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:032x})".format(data))
 		words.extend(unpack(data, min(channelwidth, nwords-nrecvd)))
 		nrecvd += channelwidth
 		sim.wr(channel.data_ren, 1)
