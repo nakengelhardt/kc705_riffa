@@ -84,7 +84,7 @@ def channel_write(sim, channel, words):
 		yield
 		while not sim.rd(channel.data_ren):
 			yield
-		print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Sent data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:032x})".format(data))
+		# print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Sent data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:032x})".format(data))
 		nsent += channelwidth
 	sim.wr(channel.start, 0)
 	sim.wr(channel.last, 0)
@@ -111,7 +111,7 @@ def channel_read(sim, channel):
 		while not sim.rd(channel.data_valid):
 			yield
 		data = sim.rd(channel.data)
-		print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:032x})".format(data))
+		# print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:032x})".format(data))
 		words.extend(unpack(data, min(channelwidth, nwords-nrecvd)))
 		nrecvd += channelwidth
 		sim.wr(channel.data_ren, 1)

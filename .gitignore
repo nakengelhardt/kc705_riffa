@@ -3,6 +3,7 @@ kc705_pcie_x8_gen2_example.xpr.zip
 # migen-generated files
 virtmem.v
 movingaverage.v
+usercode.v
 
 #Xilinx logs
 *.log
