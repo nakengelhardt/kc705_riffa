@@ -19,6 +19,13 @@ class TBMemory(Module):
 		self.ptrsize = ptrsize
 		self.npagesincache = npagesincache
 		self.pagesize = pagesize
+		self.modified = {}
+
+	def read_mem(self, addr):
+		if addr in self.modified:
+			return self.modified[addr]
+		else:
+			return generate_data(addr)
 
 	def gen_simulation(self, selfp):
 		while True:
@@ -28,14 +35,15 @@ class TBMemory(Module):
 			assert(addr == pg_addr)
 			if cmd[2] == 0x6e706e70:
 				print("Fetching page " + hex(addr))
-				yield from riffa.channel_write(selfp.simulator, self.data_tx, [generate_data(i) for i in range(pg_addr,pg_addr+self.pagesize, 4)])
+				yield from riffa.channel_write(selfp.simulator, self.data_tx, [self.read_mem(i) for i in range(pg_addr,pg_addr+self.pagesize, (self.wordsize//8))])
 			if cmd[2] == 0x61B061B0:
 				print("Writeback page " + hex(addr))
 				ret = yield from riffa.channel_read(selfp.simulator, self.data_rx)
 				print("Modified:")
 				for i in range(len(ret)):
-					if ret[i] != generate_data(addr+i*4):
-						print(hex(addr+i*4) + ": " + str(ret[i]))
+					if ret[i] != generate_data(addr+i*(self.wordsize//8)):
+						self.modified[addr+i*(self.wordsize//8)] = ret[i]
+						print(hex(addr+i*(self.wordsize//8)) + ": " + str(ret[i]))
 
 	gen_simulation.passive = True
 
@@ -65,7 +73,7 @@ class TB(Module):
 		(0x8, 1), 
 		(0x45600c, 0), 
 		(0x604000, 0), 
-		(0x604008, 0)
+		(0x604008, 1)
 		]
 		for addr, we in transactions:
 			selfp.dut.virtmem.virt_addr = addr
@@ -81,7 +89,14 @@ class TB(Module):
 				print("Wrote data " + str(generate_data(addr) + 1) + " to address " + hex(addr))
 			else:
 				print("Read data " + str(selfp.dut.virtmem.data_read) + " from address " + hex(addr))
-		yield
+		selfp.dut.virtmem.virt_addr = 0
+		selfp.dut.virtmem.req = 0
+		selfp.dut.virtmem.data_write = 0
+		selfp.dut.virtmem.write_enable = 0
+		selfp.dut.virtmem.flush_all = 1
+		yield 2
+		while not selfp.dut.virtmem.done:
+			yield
 		# for i in range(1024):
 		# 	a, b, c, d = riffa.unpack(selfp.simulator.rd(self.dut.virtmem.mem, i), 4)
 		# 	print("{0:04x}: {1:08x} {2:08x} {3:08x} {4:08x}".format(i*16, a, b, c, d))
