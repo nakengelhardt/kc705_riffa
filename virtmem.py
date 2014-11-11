@@ -50,6 +50,8 @@ class Virtmem(Module):
 		self.write_enable = Signal()
 		self.flush_all = Signal()
 
+		self.done_n = Signal()
+		self.sync += self.done.eq(self.done_n)
 		###
 
 		memorysize = npagesincache*pagesize*8//c_pci_data_width
@@ -129,7 +131,7 @@ class Virtmem(Module):
 
 		flush_done = Signal()
 
-		page_control_fsm.act("IDLE",
+		page_control_fsm.act("IDLE", #0
 			If(self.req,
 				If(found,
 					If(self.write_enable,
@@ -138,6 +140,7 @@ class Virtmem(Module):
 						cache_hit_en.eq(1),
 						rd_port.adr.eq(Cat(self.virt_addr[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
 						rd_port.re.eq(1),
+						self.done_n.eq(1),
 						NextState("SERVE_DATA")
 					)
 				).Else(
@@ -149,25 +152,37 @@ class Virtmem(Module):
 				)
 			).Elif(self.flush_all,
 				NextState("FLUSH_DIRTY")
+			).Elif(self.cmd_rx.start,
+				rlen_load.eq(1),
+				NextState("RX_CMD")
 			)
 		)
-		page_control_fsm.act("FLUSH_DIRTY",
+		page_control_fsm.act("FLUSH_DIRTY", #1
 			self.flush_initiated_n.eq(1),
 			self.flush_initiated_en.eq(1),
 			flush_done.eq(1),
 			[If(page_dirty[i], self.pg_to_flush_n.eq(i), flush_done.eq(0)) for i in range(npagesincache)],
 			self.pg_to_flush_en.eq(1),
 			If(flush_done,
-				self.done.eq(self.flush_all),
 				self.flush_initiated_n.eq(0),
-				NextState("IDLE")
+				self.flush_initiated_en.eq(1),
+				If(self.flush_all, 
+					self.done_n.eq(1),
+					NextState("IDLE")
+				).Else(
+					NextState("TX_FLUSH_DONE")
+				)
 			).Else(
+				self.rxcount_n.eq(0),
+				self.rxcount_en.eq(1),
+				rlen_load.eq(1),
 				NextState("TX_WRITEBACK_CMD")
 			)
 		)
-		page_control_fsm.act("TX_WRITEBACK_CMD",
+		page_control_fsm.act("TX_WRITEBACK_CMD", #2
+			#TODO: this assumes 128b data, make independent
 			self.cmd_tx.start.eq(1),
-			self.cmd_tx.len.eq(4),
+			self.cmd_tx.len.eq((ptrsize + 64)//32),
 			self.cmd_tx.data.eq(Cat(zero, page_tags[pg_to_writeback] , 0x61B061B061B061B0)),
 			self.cmd_tx.data_valid.eq(1),
 			self.cmd_tx.last.eq(1),
@@ -177,8 +192,8 @@ class Virtmem(Module):
 				NextState("TX_WAIT")
 			)
 		)
-		page_control_fsm.act("TX_WAIT",
-			self.data_tx.len.eq(pagesize*8//wordsize),
+		page_control_fsm.act("TX_WAIT", #3
+			self.data_tx.len.eq(pagesize//4),
 			self.data_tx.last.eq(1),
 			self.data_tx.start.eq(1),
 			If(self.data_tx.ack,
@@ -187,15 +202,15 @@ class Virtmem(Module):
 				NextState("TX_DIRTY_PAGE")
 			)
 		)
-		page_control_fsm.act("TX_DIRTY_PAGE",
-			self.data_tx.len.eq(pagesize//wordsize),
+		page_control_fsm.act("TX_DIRTY_PAGE", #4
+			self.data_tx.len.eq(pagesize//4),
 			self.data_tx.last.eq(1),
 			self.data_tx.data_valid.eq(1),
 			self.data_tx.data.eq(rd_port.dat_r),
 			If(self.data_tx.data_ren,
-				self.tcount_n.eq(self.tcount + c_pci_data_width//wordsize),
+				self.tcount_n.eq(self.tcount + c_pci_data_width//32),
 				self.tcount_en.eq(1),
-				If(self.tcount_n < (pagesize*8//wordsize),
+				If(self.tcount_n < (pagesize//4),
 					rd_port.adr.eq(Cat(self.tcount_n[word_adr_nbits:word_adr_nbits+line_adr_nbits], pg_to_writeback)),
 					rd_port.re.eq(1),
 					NextState("TX_DIRTY_PAGE")
@@ -210,9 +225,10 @@ class Virtmem(Module):
 				)
 			)
 		)
-		page_control_fsm.act("TX_PAGE_FETCH_CMD",
+		page_control_fsm.act("TX_PAGE_FETCH_CMD", #5
+			#TODO: this assumes 128b data, make independent
 			self.cmd_tx.start.eq(1),
-			self.cmd_tx.len.eq(4),
+			self.cmd_tx.len.eq((ptrsize + 64)//32),
 			self.cmd_tx.data.eq(Cat(zero, self.virt_addr[page_tag_off:] , 0x6E706E706E706E70)),
 			self.cmd_tx.data_valid.eq(1),
 			self.cmd_tx.last.eq(1),
@@ -220,7 +236,7 @@ class Virtmem(Module):
 				NextState("RX_WAIT")
 			)
 		)
-		page_control_fsm.act("RX_WAIT",
+		page_control_fsm.act("RX_WAIT", #6
 			self.rxcount_n.eq(0),
 			self.rxcount_en.eq(1),
 			If(self.data_rx.start,
@@ -228,7 +244,7 @@ class Virtmem(Module):
 				NextState("RX_PAGE")
 			)
 		)
-		page_control_fsm.act("RX_PAGE",
+		page_control_fsm.act("RX_PAGE", #7
 			self.data_rx.ack.eq(1),
 			wr_port.dat_w.eq(self.data_rx.data),
 			wr_port.adr.eq(Cat(self.rxcount[word_adr_nbits:word_adr_nbits+line_adr_nbits], pg_to_replace)),
@@ -250,26 +266,46 @@ class Virtmem(Module):
 				)
 			)	
 		)
-		page_control_fsm.act("GET_DATA",
+		page_control_fsm.act("GET_DATA", #8
 			cache_hit_en.eq(1),
 			rd_port.adr.eq(Cat(self.virt_addr[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
 			rd_port.re.eq(1),
+			self.done_n.eq(1),
 			NextState("SERVE_DATA")
 		)
-		page_control_fsm.act("SERVE_DATA",
+		page_control_fsm.act("SERVE_DATA", #9
 			[If(self.virt_addr[word_adr_off:word_adr_off+word_adr_nbits] == i, self.data_read.eq(rd_port.dat_r[i*wordsize:(i+1)*wordsize])) for i in range(c_pci_data_width//wordsize)],
-			self.done.eq(1),
 			NextState("IDLE")
 		)
-		page_control_fsm.act("WRITE_DATA",
+		page_control_fsm.act("WRITE_DATA", #10
 			cache_hit_en.eq(1),
 			wr_port.dat_w.eq(Cat([self.data_write for i in range(c_pci_data_width//wordsize)])),
 			wr_port.we.eq(1 << self.virt_addr[word_adr_off:word_adr_off+word_adr_nbits]),
 			wr_port.adr.eq(Cat(self.virt_addr[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
 			page_dirty_n[pg_adr].eq(1),
 			page_dirty_en[pg_adr].eq(1),
-			self.done.eq(1),
+			self.done_n.eq(1),
 			NextState("IDLE")
+		)
+		page_control_fsm.act("RX_CMD", #11
+			self.cmd_rx.ack.eq(1),
+			If(self.cmd_rx.data_valid,
+				self.cmd_rx.data_ren.eq(1),
+				If(self.cmd_rx.data[0:32] == 0xF1005,
+					NextState("FLUSH_DIRTY")
+				)
+			)
+		)
+		page_control_fsm.act("TX_FLUSH_DONE", #12
+		#TODO: this assumes 128b data, make independent
+		self.cmd_tx.start.eq(1),
+			self.cmd_tx.len.eq((ptrsize + 64)//32),
+			self.cmd_tx.data.eq(0xD1DF1005D1DF1005 << 64),
+			self.cmd_tx.data_valid.eq(1),
+			self.cmd_tx.last.eq(1),
+			If(self.cmd_tx.data_ren,
+				NextState("IDLE")
+			)
 		)
 
 

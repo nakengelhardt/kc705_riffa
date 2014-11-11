@@ -1,3 +1,6 @@
+import random
+random.seed(6)
+
 from migen.fhdl.std import *
 from migen.sim.generic import run_simulation
 
@@ -9,7 +12,7 @@ def generate_data(addr):
 
 
 class TBMemory(Module):
-	def __init__(self, cmd_rx, cmd_tx, data_rx, data_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, npagesincache=4, pagesize=4096):
+	def __init__(self, cmd_rx, cmd_tx, data_rx, data_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, npagesincache=4, pagesize=4096, init_fn=generate_data):
 		self.cmd_rx = cmd_rx
 		self.cmd_tx = cmd_tx
 		self.data_rx = data_rx
@@ -20,12 +23,14 @@ class TBMemory(Module):
 		self.npagesincache = npagesincache
 		self.pagesize = pagesize
 		self.modified = {}
+		self.flushack = 0
+		self.init_fn = init_fn
 
 	def read_mem(self, addr):
 		if addr in self.modified:
 			return self.modified[addr]
 		else:
-			return generate_data(addr)
+			return self.init_fn(addr)
 
 	def gen_simulation(self, selfp):
 		while True:
@@ -41,16 +46,29 @@ class TBMemory(Module):
 				ret = yield from riffa.channel_read(selfp.simulator, self.data_rx)
 				print("Modified:")
 				for i in range(len(ret)):
-					if ret[i] != generate_data(addr+i*(self.wordsize//8)):
+					if ret[i] != self.read_mem(addr+i*(self.wordsize//8)):
 						self.modified[addr+i*(self.wordsize//8)] = ret[i]
 						print(hex(addr+i*(self.wordsize//8)) + ": " + str(ret[i]))
+			if cmd[2] == 0xD1DF1005:
+				self.flushack = 1
+				print("Cache finished flushing.")
 
 	gen_simulation.passive = True
 
 
+def generate_random_address():
+	pages = [0x604000, 0x0, 0x597a000, 0x456000, 0xfffe000, 0x7868000, 0x222000, 0xaa45000]
+	pg = random.choice(pages)
+	off = random.randrange(0,1024)
+	return pg + off<<2
+
+def generate_random_transactions(num):
+	for i in range(num):
+		yield (generate_random_address(), random.randint(0,1))
+
 class TB(Module):
 	def __init__(self):
-		c_pci_data_width = 128
+		self.c_pci_data_width = c_pci_data_width = 128
 		num_chnls = 2
 		combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
 		combined_interface_rx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
@@ -64,18 +82,7 @@ class TB(Module):
 		self.submodules.tbmem = TBMemory(tx0, rx0, tx1, rx1, c_pci_data_width=c_pci_data_width)
 
 	def gen_simulation(self, selfp):
-		transactions = [
-		(0x604000, 0), 
-		(0x604004, 0), 
-		(0x604008, 1),
-		(0x597a004, 0), 
-		(0xfffe000, 0), 
-		(0x8, 1), 
-		(0x45600c, 0), 
-		(0x604000, 0), 
-		(0x604008, 1)
-		]
-		for addr, we in transactions:
+		for addr, we in generate_random_transactions(24):
 			selfp.dut.virtmem.virt_addr = addr
 			selfp.dut.virtmem.req = 1
 			selfp.dut.virtmem.write_enable = we
@@ -93,10 +100,15 @@ class TB(Module):
 		selfp.dut.virtmem.req = 0
 		selfp.dut.virtmem.data_write = 0
 		selfp.dut.virtmem.write_enable = 0
-		selfp.dut.virtmem.flush_all = 1
-		yield 2
-		while not selfp.dut.virtmem.done:
+		# selfp.dut.virtmem.flush_all = 1
+		# yield 2
+		# while not selfp.dut.virtmem.done:
+		# 	yield
+
+		yield from riffa.channel_write(selfp.simulator, self.tbmem.cmd_tx, [0xF1005])
+		while not self.tbmem.flushack:
 			yield
+
 		# for i in range(1024):
 		# 	a, b, c, d = riffa.unpack(selfp.simulator.rd(self.dut.virtmem.mem, i), 4)
 		# 	print("{0:04x}: {1:08x} {2:08x} {3:08x} {4:08x}".format(i*16, a, b, c, d))
