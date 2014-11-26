@@ -6,10 +6,15 @@ import itertools
 
 class TrueLRU(Module):
 	def __init__(self, npages=4):
-		self.hit = hit = Signal()
-		self.pg_adr = pg_adr = Signal(log2_int(npages))
+		self.hit = Signal()
+		self.pg_adr = Signal(log2_int(npages))
 		self.pg_to_replace = pg_to_replace = Signal(log2_int(npages))
 		self.npages = npages
+
+		pg_adr_p = Signal(log2_int(npages))
+		hit_p = Signal()
+
+		self.sync += hit_p.eq(self.hit), pg_adr_p.eq(self.pg_adr)
 
 		rom_contents = [0x1B for i in range(2**((npages+1)*log2_int(npages)))]
 
@@ -31,8 +36,8 @@ class TrueLRU(Module):
 		self.lru = lru = Signal(npages*log2_int(npages))
 		lru_addr = Signal((npages+1)*log2_int(npages))
 
-		self.comb += lru_addr.eq(Cat(lru, pg_adr))
-		self.sync += If(hit, lru.eq(rom[lru_addr]))
+		self.comb += lru_addr.eq(Cat(lru, pg_adr_p))
+		self.sync += If(hit_p, lru.eq(rom[lru_addr]))
 
 		self.comb += pg_to_replace.eq(lru[0:log2_int(npages)])
 
@@ -54,6 +59,23 @@ class TrueLRU(Module):
 
 # 		self.sync += If(hit, lru[0][0].eq(~pg_adr[-1])), [If(hit, lru[i][pg_adr[0:i]].eq(~pg_adr[-(i+1):])) for i in range(1, log2_int(npages))]
 
+class DummyPolicy(Module):
+	def __init__(self, npages=4):
+		self.hit = Signal()
+		self.pg_adr = Signal(log2_int(npages))
+		self.pg_to_replace = pg_to_replace = Signal(log2_int(npages))
+		self.npages = npages
+
+		self.comb += self.pg_to_replace.eq(0)
+
+class RoundRobin(Module):
+	def __init__(self, npages=4):
+		self.hit = Signal()
+		self.pg_adr = Signal(log2_int(npages))
+		self.pg_to_replace = pg_to_replace = Signal(log2_int(npages))
+		self.npages = npages
+
+		self.sync += If(self.hit, self.pg_to_replace.eq(self.pg_to_replace + 1))	
 
 def main():
 	plru = TrueLRU()

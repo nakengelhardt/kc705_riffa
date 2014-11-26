@@ -19,8 +19,7 @@ class TB(Module):
 		for i in test_adrs:
 			selfp.dut.pg_adr = i % self.npages
 			print("Hit " + str(i % self.npages))
-			yield
-			yield
+			yield 3
 			print("LRU: " + str(selfp.dut.pg_to_replace))
 
 
