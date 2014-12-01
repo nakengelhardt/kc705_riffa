@@ -86,11 +86,13 @@ def channel_write(sim, channel, words):
 			yield
 		# print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Sent data " + str(words[nsent:min(nsent+channelwidth, nwords)]) + " ({0:032x})".format(data))
 		nsent += channelwidth
+		# print(str(nsent))
 	sim.wr(channel.start, 0)
 	sim.wr(channel.last, 0)
 	sim.wr(channel.len, 0)
 	sim.wr(channel.data, 0)
 	sim.wr(channel.data_valid, 0)
+	yield
 
 def channel_read(sim, channel):
 	wordsize = 32

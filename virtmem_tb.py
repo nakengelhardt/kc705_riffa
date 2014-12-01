@@ -36,30 +36,57 @@ class TBMemory(Module):
 		ret = []
 		while True:
 			if selfp.cmd_rx.start :
+				print("Receiving command...")
 				cmd = yield from riffa.channel_read(selfp.simulator, self.cmd_rx)
-				addr = (cmd[1] << 32) | cmd[0]
+				addr = (cmd[1] << 32) | cmd[0] if self.ptrsize > 32 else cmd[0]
 				pg_addr = (addr >> log2_int(self.pagesize)) << log2_int(self.pagesize) 
 				assert(addr == pg_addr)
 				if cmd[2] == 0x6e706e70:
 					print("Fetching page " + hex(addr))
-					yield from riffa.channel_write(selfp.simulator, self.data_tx, [self.read_mem(i) for i in range(pg_addr,pg_addr+self.pagesize, (self.wordsize//8))])
+					data = []
+					if self.wordsize < 32:
+						incr = (self.wordsize//8)
+						mask = 1
+						for i in range(self.wordsize):
+							mask = mask | (1 << i)
+						for i in range(pg_addr, pg_addr+self.pagesize, 4):
+							d = 0
+							for j in range(0,4,incr):
+								d = d | ((self.read_mem(i+j) & mask) << j*self.wordsize)
+							data.append(d)
+					else:
+						for i in range(pg_addr, pg_addr+self.pagesize, (self.wordsize//8)):
+							data.extend(riffa.unpack(self.read_mem(i), self.wordsize//32))
+					if len(data) != self.pagesize//4:
+						print("Wrong page length: " + str(len(data)))
+					yield from riffa.channel_write(selfp.simulator, self.data_tx, data)
+					# print("Finished fetching page.")
 				if cmd[2] == 0x61B061B0:
 					print("Writeback page " + hex(addr))
 					if len(ret) < self.pagesize//4:
 						print("Incomplete writeback: received only " + str(len(ret)) + " words")
 					words = [riffa.pack(x) for x in zip(*[ret[i::self.wordsize//32] for i in range(self.wordsize//32)])]
 					print("Modified:")
+					num_modified = 0
 					for i in range(len(words)):
 						if words[i] != self.read_mem(addr+i*(self.wordsize//8)):
+							num_modified += 1
 							self.modified[addr+i*(self.wordsize//8)] = words[i]
-							print(hex(addr+i*(self.wordsize//8)) + ": " + str(words[i]))
+							if num_modified < 10:
+								print(hex(addr+i*(self.wordsize//8)) + ": " + str(words[i]))
+					if num_modified >= 10:
+						print("and more... " + str(num_modified) + " total.")
 					ret = []
+					# print("Finished writing back page.")
 				if cmd[2] == 0xD1DF1005:
 					self.flushack = 1
-					print("Cache finished flushing.")
+					# print("Cache finished flushing.")
 			elif selfp.data_rx.start:
+				print("Receiving data...")
 				ret = yield from riffa.channel_read(selfp.simulator, self.data_rx)
+				# print("Finished receiving data.")
 			else:
+				# print("Nothing")
 				yield
 					
 
@@ -70,7 +97,7 @@ class TB(Module):
 	def __init__(self):
 		self.c_pci_data_width = c_pci_data_width = 128
 		self.ptrsize = 64
-		self.wordsize = 32
+		self.wordsize = 128
 		self.pagesize = 4096
 		num_chnls = 2
 		combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
@@ -87,7 +114,10 @@ class TB(Module):
 		tx0, rx0 = self.channelsplitter.get_channel(0)
 		tx1, rx1 = self.channelsplitter.get_channel(1)
 
-		self.submodules.tbmem = TBMemory(tx0, rx0, tx1, rx1, c_pci_data_width=c_pci_data_width, wordsize=self.wordsize, ptrsize=self.ptrsize)
+		self.submodules.tbmem = TBMemory(tx0, rx0, tx1, rx1, 
+			c_pci_data_width=c_pci_data_width, 
+			wordsize=self.wordsize, 
+			ptrsize=self.ptrsize)
 
 
 	def generate_random_address(self):
@@ -129,6 +159,7 @@ class TB(Module):
 		while not self.tbmem.flushack:
 			yield
 
+		print("Simulation took " + str(selfp.simulator.cycle_counter) + " cycles.")
 		# for i in range(1024):
 		# 	a, b, c, d = riffa.unpack(selfp.simulator.rd(self.dut.virtmem.mem, i), 4)
 		# 	print("{0:04x}: {1:08x} {2:08x} {3:08x} {4:08x}".format(i*16, a, b, c, d))
@@ -138,4 +169,4 @@ class TB(Module):
 
 if __name__ == "__main__":
 	tb = TB()
-	run_simulation(tb, vcd_name="tb.vcd", ncycles=10000)
+	run_simulation(tb, vcd_name="tb.vcd", keep_files=True, ncycles=30000)
