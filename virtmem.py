@@ -1,7 +1,7 @@
 import sys
 
 from migen.fhdl.std import *
-from migen.genlib.fsm import FSM, NextState
+from migen.genlib.fsm import FSM, NextState, NextValue
 
 from migen.fhdl import verilog
 
@@ -66,6 +66,11 @@ class Virtmem(Module):
 		memorywidth = max(c_pci_data_width, wordsize)
 		memorysize = npagesincache*pagesize*8//memorywidth
 
+		pcie_word_adr_nbits = log2_int(memorywidth//32)
+		num_tx_off = log2_int(c_pci_data_width//32)
+
+		num_tx_per_word = max(1, wordsize//c_pci_data_width)
+
 		words_per_line = c_pci_data_width//wordsize if c_pci_data_width > wordsize else wordsize//c_pci_data_width
 
 		page_adr_nbits = log2_int(npagesincache)
@@ -74,12 +79,12 @@ class Virtmem(Module):
 		byte_adr_nbits = log2_int(wordsize//8)
 
 		word_adr_off = byte_adr_nbits
-		line_adr_off = word_adr_nbits + byte_adr_nbits
-		page_tag_off = line_adr_nbits + word_adr_nbits + byte_adr_nbits
+		line_adr_off = log2_int(memorywidth//8)
+		page_tag_off = line_adr_nbits + line_adr_off
 
 		page_tag_nbits = ptrsize - page_tag_off
 
-		self.specials.mem = Memory(memorywidth, memorysize, init=[i+1000000 for i in range(memorysize)])
+		self.specials.mem = Memory(memorywidth, memorysize, init=[i+0xABBA for i in range(memorysize)])
 		
 		self.specials.rd_port = rd_port = self.mem.get_port(has_re=True)
 
@@ -118,6 +123,8 @@ class Virtmem(Module):
 		self.make_fsm_reg("rxcount", 32)
 
 		self.make_fsm_reg("tcount", 32)
+
+		self.wordcount = Signal(32)
 
 		rlen = Signal(32)
 		rlen_load = Signal()
@@ -221,6 +228,7 @@ class Virtmem(Module):
 			self.data_tx.last.eq(1),
 			self.tcount_n.eq(c_pci_data_width//32),
 			self.tcount_en.eq(1),
+			NextValue(self.wordcount, 0),
 			If(self.data_tx.ack,
 				rd_port.adr.eq(0),
 				rd_port.adr[-page_adr_nbits:].eq(pg_to_writeback),
@@ -233,12 +241,16 @@ class Virtmem(Module):
 			self.data_tx.len.eq(pagesize//4),
 			self.data_tx.last.eq(1),
 			self.data_tx.data_valid.eq(1),
-			self.data_tx.data.eq(rd_port.dat_r),
+			self.data_tx.data.eq(rd_port.dat_r)
+			if c_pci_data_width >= wordsize else
+			[If(i == self.wordcount[:word_adr_nbits], self.data_tx.data.eq(rd_port.dat_r[i*c_pci_data_width:(i+1)*c_pci_data_width])) for i in range(num_tx_per_word)],
 			If(self.data_tx.data_ren,
 				self.tcount_n.eq(self.tcount + c_pci_data_width//32),
 				self.tcount_en.eq(1),
+				NextValue(self.wordcount, self.wordcount + 1),
 				If(self.tcount < (pagesize//4),
-					rd_port.adr.eq(Cat(self.tcount[log2_int(c_pci_data_width//32):log2_int(c_pci_data_width//32)+line_adr_nbits], pg_to_writeback)),
+					rd_port.adr[0: line_adr_nbits].eq(self.tcount[pcie_word_adr_nbits:pcie_word_adr_nbits + line_adr_nbits]),
+					rd_port.adr[-page_adr_nbits:].eq(pg_to_writeback),
 					rd_port.re.eq(1),
 					NextState("TX_DIRTY_PAGE")
 				).Else(
@@ -247,7 +259,7 @@ class Virtmem(Module):
 			)
 		)
 		page_fetch_cmd = Signal(128)
-		self.comb += page_fetch_cmd[64:128].eq(0x6E706E706E706E70), page_fetch_cmd[page_tag_off:64].eq(virt_addr_p[page_tag_off:])
+		self.comb += page_fetch_cmd[64: 128].eq(0x6E706E706E706E70), page_fetch_cmd[page_tag_off: 64].eq(virt_addr_p[page_tag_off:])
 		page_control_fsm.act("TX_PAGE_FETCH_CMD", #6
 			self.cmd_tx.start.eq(1),
 			self.cmd_tx.len.eq(4),
@@ -277,16 +289,18 @@ class Virtmem(Module):
 		)
 		page_control_fsm.act("RX_PAGE", #9
 			self.data_rx.ack.eq(1),
-			wr_port.dat_w.eq(self.data_rx.data),
-			wr_port.adr[0:line_adr_nbits].eq(self.rxcount[log2_int(c_pci_data_width//32):log2_int(c_pci_data_width//32)+line_adr_nbits]),
+			wr_port.dat_w.eq(Cat([self.data_rx.data for i in range(num_tx_per_word)])),
+			wr_port.adr[0:line_adr_nbits].eq(self.rxcount[pcie_word_adr_nbits: pcie_word_adr_nbits + line_adr_nbits]),
 			wr_port.adr[-page_adr_nbits:].eq(pg_to_replace),
 			If(self.data_rx.data_valid,
 				self.data_rx.data_ren.eq(1),
-				[wr_port.we[i].eq(1) for i in range(c_pci_data_width//wordsize)],
+				[wr_port.we[i].eq(1) for i in range(c_pci_data_width//wordsize)]
+				if c_pci_data_width >= wordsize else
+				wr_port.we.eq(1 << self.rxcount[num_tx_off: num_tx_off + word_adr_nbits]),
 				self.rxcount_n.eq(self.rxcount + c_pci_data_width//32),
 				self.rxcount_en.eq(1),
 				If((self.rxcount >= (pagesize*8 - c_pci_data_width)//32) | (self.rxcount >= rlen - c_pci_data_width//32),
-					page_tags_n[pg_to_replace].eq(virt_addr_p[page_tag_off:ptrsize]),
+					page_tags_n[pg_to_replace].eq(virt_addr_p[page_tag_off: ptrsize]),
 					page_tags_en[pg_to_replace].eq(1),
 					page_valid_n[pg_to_replace].eq(1),
 					page_valid_en[pg_to_replace].eq(1),
@@ -308,17 +322,17 @@ class Virtmem(Module):
 		page_control_fsm.act("SERVE_DATA", #11
 			[If(virt_addr_p[word_adr_off:word_adr_off+word_adr_nbits] == i, self.data_read.eq(rd_port.dat_r[i*wordsize:(i+1)*wordsize])) for i in range(c_pci_data_width//wordsize)]
 			if c_pci_data_width > wordsize else
-			self.data_read.eq(rd_port.dat_r)
-			#if c_pci_data_width == wordsize else
-			,
+			self.data_read.eq(rd_port.dat_r),
 			NextState("WAIT_1")
 		)
 		page_control_fsm.act("WRITE_DATA", #12
 			cache_hit_en.eq(1),
-			wr_port.dat_w.eq(Cat([data_write_p for i in range(c_pci_data_width//wordsize)])),
+			wr_port.dat_w.eq(Cat([data_write_p for i in range(words_per_line)]))
+			if c_pci_data_width > wordsize else
+			wr_port.dat_w.eq(data_write_p),
 			wr_port.we.eq(1 << virt_addr_p[word_adr_off:word_adr_off+word_adr_nbits])
 			if c_pci_data_width > wordsize else
-			wr_port.we.eq(1),
+			[wr_port.we[i].eq(1) for i in range(words_per_line)],
 			wr_port.adr.eq(Cat(virt_addr_p[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
 			page_dirty_n[pg_adr].eq(1),
 			page_dirty_en[pg_adr].eq(1),

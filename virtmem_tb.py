@@ -7,12 +7,18 @@ from migen.sim.generic import run_simulation
 import virtmem
 import riffa
 
-def generate_data(addr):
-	return (addr >> 32) & 0xFFFF | (addr & 0xFFFF)
+def generate_data_fn(wordsize=32):
+	def generate_data(addr):
+		if wordsize < 16:
+			mask = 0xFF
+		else:
+			mask = 0xFFFF
+		return (addr & mask)
+	return generate_data
 
 
 class TBMemory(Module):
-	def __init__(self, cmd_rx, cmd_tx, data_rx, data_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, npagesincache=4, pagesize=4096, init_fn=generate_data):
+	def __init__(self, cmd_rx, cmd_tx, data_rx, data_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, npagesincache=4, pagesize=4096, init_fn=generate_data_fn()):
 		self.cmd_rx = cmd_rx
 		self.cmd_tx = cmd_tx
 		self.data_rx = data_rx
@@ -36,7 +42,7 @@ class TBMemory(Module):
 		ret = []
 		while True:
 			if selfp.cmd_rx.start :
-				print("Receiving command...")
+				# print("Receiving command...")
 				cmd = yield from riffa.channel_read(selfp.simulator, self.cmd_rx)
 				addr = (cmd[1] << 32) | cmd[0] if self.ptrsize > 32 else cmd[0]
 				pg_addr = (addr >> log2_int(self.pagesize)) << log2_int(self.pagesize) 
@@ -45,14 +51,13 @@ class TBMemory(Module):
 					print("Fetching page " + hex(addr))
 					data = []
 					if self.wordsize < 32:
-						incr = (self.wordsize//8)
 						mask = 1
 						for i in range(self.wordsize):
 							mask = mask | (1 << i)
 						for i in range(pg_addr, pg_addr+self.pagesize, 4):
 							d = 0
-							for j in range(0,4,incr):
-								d = d | ((self.read_mem(i+j) & mask) << j*self.wordsize)
+							for j in range(0,32//self.wordsize):
+								d = d | ((self.read_mem(i+ j*(self.wordsize//8)) & mask) << j*self.wordsize)
 							data.append(d)
 					else:
 						for i in range(pg_addr, pg_addr+self.pagesize, (self.wordsize//8)):
@@ -63,9 +68,19 @@ class TBMemory(Module):
 					# print("Finished fetching page.")
 				if cmd[2] == 0x61B061B0:
 					print("Writeback page " + hex(addr))
+					# print(ret)
 					if len(ret) < self.pagesize//4:
 						print("Incomplete writeback: received only " + str(len(ret)) + " words")
-					words = [riffa.pack(x) for x in zip(*[ret[i::self.wordsize//32] for i in range(self.wordsize//32)])]
+					if self.wordsize >= 32:
+						words = [riffa.pack(x) for x in zip(*[ret[i::self.wordsize//32] for i in range(self.wordsize//32)])]
+					else:
+						words = []
+						mask = 1
+						for i in range(self.wordsize):
+							mask = mask | (1 << i)
+						for i in range(len(ret)):
+							for j in range(32//self.wordsize):
+								words.append((ret[i] >> j*self.wordsize) & mask)
 					print("Modified:")
 					num_modified = 0
 					for i in range(len(words)):
@@ -82,7 +97,7 @@ class TBMemory(Module):
 					self.flushack = 1
 					# print("Cache finished flushing.")
 			elif selfp.data_rx.start:
-				print("Receiving data...")
+				# print("Receiving data...")
 				ret = yield from riffa.channel_read(selfp.simulator, self.data_rx)
 				# print("Finished receiving data.")
 			else:
@@ -97,7 +112,7 @@ class TB(Module):
 	def __init__(self):
 		self.c_pci_data_width = c_pci_data_width = 128
 		self.ptrsize = 64
-		self.wordsize = 128
+		self.wordsize = 32
 		self.pagesize = 4096
 		num_chnls = 2
 		combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
@@ -117,14 +132,15 @@ class TB(Module):
 		self.submodules.tbmem = TBMemory(tx0, rx0, tx1, rx1, 
 			c_pci_data_width=c_pci_data_width, 
 			wordsize=self.wordsize, 
-			ptrsize=self.ptrsize)
+			ptrsize=self.ptrsize,
+			init_fn=generate_data_fn(self.wordsize))
 
 
 	def generate_random_address(self):
 		pages = [0x604000, 0x0, 0x597a000, 0x456000, 0xfffe000, 0x7868000, 0x222000, 0xaa45000]
 		pg = random.choice(pages)
 		off = random.randrange(0,self.pagesize*8//self.wordsize)
-		return pg + off<<log2_int(self.wordsize//8)
+		return pg + (off<<log2_int(self.wordsize//8))
 
 	def generate_random_transactions(self, num):
 		for i in range(num):
@@ -132,6 +148,7 @@ class TB(Module):
 
 
 	def gen_simulation(self, selfp):
+		generate_data = generate_data_fn(self.wordsize)
 		for addr, we in self.generate_random_transactions(24):
 			selfp.dut.virtmem.virt_addr = addr
 			selfp.dut.virtmem.req = 1
