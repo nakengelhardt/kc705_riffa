@@ -95,7 +95,7 @@ class TBMemory(Module):
 					# print("Finished writing back page.")
 				if cmd[2] == 0xD1DF1005:
 					self.flushack = 1
-					# print("Cache finished flushing.")
+					print("Cache finished flushing.")
 			elif selfp.data_rx.start:
 				# print("Receiving data...")
 				ret = yield from riffa.channel_read(selfp.simulator, self.data_rx)
@@ -175,6 +175,8 @@ class TB(Module):
 		yield from riffa.channel_write(selfp.simulator, self.tbmem.cmd_tx, [0xF1005])
 		while not self.tbmem.flushack:
 			yield
+
+		yield 20
 
 		print("Simulation took " + str(selfp.simulator.cycle_counter) + " cycles.")
 		# for i in range(1024):
