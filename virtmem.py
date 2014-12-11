@@ -164,7 +164,7 @@ class Virtmem(Module):
 		page_control_fsm.act("FLUSH_DIRTY", #1
 			NextValue(flush_initiated, 1),
 			flush_done.eq(1),
-			(If(page_dirty[i], NextValue(pg_to_flush, i), flush_done.eq(0)) for i in range(npagesincache)),
+			[If(page_dirty[i], NextValue(pg_to_flush, i), flush_done.eq(0)) for i in range(npagesincache)],
 			If(flush_done,
 				NextValue(flush_initiated, 0),
 				If(flush_all_p, 

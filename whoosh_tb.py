@@ -91,4 +91,4 @@ class TB(Module):
 
 if __name__ == "__main__":
 	tb = TB()
-	run_simulation(tb, vcd_name="tb.vcd", ncycles=100000)
+	run_simulation(tb, vcd_name="tb.vcd", keep_files=True, ncycles=100000)
