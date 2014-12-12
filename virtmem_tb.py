@@ -112,7 +112,7 @@ class TB(Module):
 	def __init__(self):
 		self.c_pci_data_width = c_pci_data_width = 128
 		self.ptrsize = 64
-		self.wordsize = 32
+		self.wordsize = 16
 		self.pagesize = 4096
 		num_chnls = 2
 		combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
@@ -137,7 +137,7 @@ class TB(Module):
 
 
 	def generate_random_address(self):
-		pages = [0x604000, 0x0, 0x597a000, 0x456000, 0xfffe000, 0x7868000, 0x222000, 0xaa45000]
+		pages = [0x604000, 0x597a000, 0x456000, 0xfffe000, 0x7868000, 0x222000, 0xaa45000]
 		pg = random.choice(pages)
 		off = random.randrange(0,self.pagesize*8//self.wordsize)
 		return pg + (off<<log2_int(self.wordsize//8))

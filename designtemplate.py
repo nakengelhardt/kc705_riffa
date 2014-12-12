@@ -37,7 +37,7 @@ def DesignTemplate(VirtmemWrapper):
 		write_data = Signal(wordsize)
 
 		# function variables
-		done = Signal()
+		done = Signal() # loop condition
 
 		fsm = FSM()
 		self.submodules += fsm
@@ -87,6 +87,7 @@ def DesignTemplate(VirtmemWrapper):
 				).Else( # end function body
 					NextState("FLUSH")
 				)
+			)
 		)
 
 		# flush virtmem cache modifications to main memory
@@ -119,6 +120,7 @@ def DesignTemplate(VirtmemWrapper):
 			##TODO: reset loop variables
 			NextState("IDLE")
 		)
+
 
 def main():
 	c_pci_data_width = 128 # PCIe lane width
