@@ -1,7 +1,7 @@
 #!/bin/bash
 
 XIL_SETTINGS=/opt/Xilinx/Vivado/2014.2/settings64.sh
-MIGEN_SRCS="whoosh"
+MIGEN_SRCS="mm"
 
 PROJ_DIR=/home/nengel/Documents/development/Riffa/riffa_2.1/source/fpga/kc705_clean
 PROJ_NAME=kc705_pcie_x8_gen2_example
@@ -38,5 +38,6 @@ quit" > ${TOP_NAME}_batch.tcl
 echo "vivado -mode batch -source ${TOP_NAME}_batch.tcl"
 vivado -mode batch -source ${TOP_NAME}_batch.tcl
 
-echo "scp -P 3389 $PROJ_DIR/$PROJ_NAME/$PROJ_NAME.runs/impl_${IMPL_RUN}/${TOP_NAME}.bit nengel@hku-casr.no-ip.org:/home/nengel/kc705_program/"
-scp -P 3389 $PROJ_DIR/$PROJ_NAME/$PROJ_NAME.runs/impl_${IMPL_RUN}/${TOP_NAME}.bit nengel@hku-casr.no-ip.org:/home/nengel/kc705_program/
+#echo "scp -P 3389 $PROJ_DIR/$PROJ_NAME/$PROJ_NAME.runs/impl_${IMPL_RUN}/${TOP_NAME}.bit nengel@hku-casr.no-ip.org:/home/nengel/kc705_program/"
+#scp -P 3389 $PROJ_DIR/$PROJ_NAME/$PROJ_NAME.runs/impl_${IMPL_RUN}/${TOP_NAME}.bit nengel@hku-casr.no-ip.org:/home/nengel/kc705_program/
+echo "scp -P 3389 nengel@nak.duckdns.org:$PROJ_DIR/$PROJ_NAME/$PROJ_NAME.runs/impl_${IMPL_RUN}/${TOP_NAME}.bit ."

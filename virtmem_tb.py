@@ -107,6 +107,16 @@ class TBMemory(Module):
 
 	gen_simulation.passive = True
 
+	def send_flush_command(self, selfp):
+		self.flushack = 0
+		yield from riffa.channel_write(selfp.simulator, self.cmd_tx, [0xF1005])
+		while self.flushack == 0:
+			yield
+		self.flushack = 0
+
+	def send_invalidate_command(self, selfp):
+		yield from riffa.channel_write(selfp.simulator, self.cmd_tx, [0xC105E])
+
 
 class TB(Module):
 	def __init__(self):

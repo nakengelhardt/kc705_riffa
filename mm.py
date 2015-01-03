@@ -199,7 +199,7 @@ class MatMul(VirtmemWrapper):
 						calc_enable_n.eq(1),
 						NextState("PUT_C")
 					).Else(
-						NextState("FLUSH")
+						NextState("TRANSMIT_INIT")
 					)
 				)
 			)

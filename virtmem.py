@@ -164,8 +164,9 @@ class Virtmem(Module):
 		page_control_fsm.act("FLUSH_DIRTY", #1
 			NextValue(flush_initiated, 1),
 			flush_done.eq(1),
-			[If(page_dirty[i], NextValue(pg_to_flush, i), flush_done.eq(0)) for i in range(npagesincache)],
+			[If(page_valid[i] & page_dirty[i], NextValue(pg_to_flush, i), flush_done.eq(0)) for i in range(npagesincache)],
 			If(flush_done,
+				#[NextValue(page_valid[i], 0) for i in range(npagesincache)],
 				NextValue(flush_initiated, 0),
 				If(flush_all_p, 
 					self.done_n.eq(1),
@@ -199,6 +200,7 @@ class Virtmem(Module):
 					NextState("TX_WRITEBACK_CMD" + str(i+1)) 
 					if i+1 < 128//c_pci_data_width else 
 					(NextValue(page_dirty[pg_to_writeback], 0),
+					NextValue(page_valid[pg_to_writeback], 0),
 					If(flush_initiated,
 						NextState("FLUSH_DIRTY")
 					).Else(
@@ -322,6 +324,8 @@ class Virtmem(Module):
 				self.cmd_rx.data_ren.eq(1),
 				If(self.cmd_rx.data[0:32] == 0xF1005,
 					NextState("FLUSH_DIRTY")
+				).Elif(self.cmd_rx.data[0:32] == 0xC105E,
+					NextState("INVALIDATE_ALL_PAGES")
 				)
 			)
 		)
@@ -354,6 +358,10 @@ class Virtmem(Module):
 				)
 			)
 		page_control_fsm.act("WAIT_1", #16
+			NextState("IDLE")
+		)
+		page_control_fsm.act("INVALIDATE_ALL_PAGES",
+			[NextValue(page_valid[i], 0) for i in range(npagesincache)],
 			NextState("IDLE")
 		)
 
