@@ -122,7 +122,7 @@ class TB(Module):
 	def __init__(self):
 		self.c_pci_data_width = c_pci_data_width = 128
 		self.ptrsize = 64
-		self.wordsize = 16
+		self.wordsize = 32
 		self.pagesize = 4096
 		num_chnls = 2
 		combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
@@ -161,14 +161,19 @@ class TB(Module):
 		generate_data = generate_data_fn(self.wordsize)
 		for addr, we in self.generate_random_transactions(24):
 			selfp.dut.virtmem.virt_addr = addr
+			selfp.dut.virtmem.num_words = 1
 			selfp.dut.virtmem.req = 1
 			selfp.dut.virtmem.write_enable = we
 			if we:
 				selfp.dut.virtmem.data_write = generate_data(addr) + 1
 			yield
 			selfp.dut.virtmem.req = 0
-			while not selfp.dut.virtmem.done:
-				yield
+			if we:
+				while not selfp.dut.virtmem.write_ack:
+					yield
+			else:
+				while not selfp.dut.virtmem.data_valid:
+					yield
 			if we:
 				print("Wrote data " + str(generate_data(addr) + 1) + " to address " + hex(addr))
 			else:
@@ -177,6 +182,53 @@ class TB(Module):
 		selfp.dut.virtmem.req = 0
 		selfp.dut.virtmem.data_write = 0
 		selfp.dut.virtmem.write_enable = 0
+		yield
+		num_words = 8
+		addr = 0x456FF0
+		selfp.dut.virtmem.virt_addr = addr
+		selfp.dut.virtmem.num_words = num_words
+		selfp.dut.virtmem.req = 1
+		print("Requesting read burst of " + str(num_words) + " words starting from address " + hex(addr))
+		internal_address = addr
+		words_recvd = 0
+		while words_recvd < num_words:
+			yield
+			if selfp.dut.virtmem.data_valid:
+				words_recvd += 1
+				print("Read " + hex(selfp.dut.virtmem.data_read) + " from address " + hex(internal_address))
+				internal_address = selfp.dut.virtmem.virt_addr_internal
+
+		selfp.dut.virtmem.virt_addr = 0
+		selfp.dut.virtmem.req = 0
+		selfp.dut.virtmem.data_write = 0
+		selfp.dut.virtmem.write_enable = 0
+
+		yield
+
+		num_words = 8
+		addr = 0x456FF0
+		selfp.dut.virtmem.virt_addr = addr
+		selfp.dut.virtmem.num_words = num_words
+		selfp.dut.virtmem.req = 1
+		selfp.dut.virtmem.write_enable = 1
+		selfp.dut.virtmem.data_write = 0xBAE
+
+		print("Requesting write burst of " + str(num_words) + " words starting from address " + hex(addr))
+		internal_address = addr
+		words_sent = 0
+		while words_sent < num_words:
+			yield
+			if selfp.dut.virtmem.write_ack:
+				words_sent += 1
+				internal_address = selfp.dut.virtmem.virt_addr_internal
+				print("Wrote " + hex(selfp.dut.virtmem.data_write) + " to address " + hex(internal_address))
+
+
+		selfp.dut.virtmem.virt_addr = 0
+		selfp.dut.virtmem.req = 0
+		selfp.dut.virtmem.data_write = 0
+		selfp.dut.virtmem.write_enable = 0
+
 		# selfp.dut.virtmem.flush_all = 1
 		# yield 2
 		# while not selfp.dut.virtmem.done:

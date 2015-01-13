@@ -6,13 +6,7 @@ from migen.fhdl import verilog
 import riffa, replacementpolicies
 from virtmem import VirtmemWrapper
 
-class DesignTemplate(VirtmemWrapper):
-	"""Template design for implementing a hardware function that accesses virtual memory via the Virtmem interface.
-	This template follows the common pattern of a function that:
-		1. receives an argument struct via a RIFFA channel
-		2. executes a loop that reads from and writes to virtual memory
-		3. returns a result struct (and implied notification that the function has finished executing) via the same RIFFA channel
-	"""
+class Count(VirtmemWrapper):
 	def __init__(self, combined_interface_rx, combined_interface_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, drive_clocks=True):
 		# init the Virtual memory module superclass with the same data sizes
 		# drive_clocks: simulation does not support multiple clock regions
@@ -23,21 +17,24 @@ class DesignTemplate(VirtmemWrapper):
 		# get a channel for communication of base pointers etc.
 		# rx/tx variables
 		rx, tx = self.get_channel(2)	
-		arg_struct_size = ?? # must be multiple of 32 (pad on SW side if necessary)
+		arg_struct_size = 128 # must be multiple of 32 (pad on SW side if necessary)
 		arg_struct = Signal(arg_struct_size)
 
-		res_struct_size = ?? # must be multiple of 32 (pad on SW side if necessary)
+		res_struct_size = 32 # must be multiple of 32 (pad on SW side if necessary)
 		res_struct = Signal(res_struct_size)
 
 		# virtmem access variables
 		##TODO: give values to these variables
 		read_adr = Signal(ptrsize)
 		read_data = Signal(wordsize)
-		write_adr = Signal(ptrsize)
-		write_data = Signal(wordsize)
+		num_words = Signal(32)
+
+		self.comb += read_adr.eq(arg_struct[0:64]), num_words.eq(arg_struct[64:128])
 
 		# function variables
 		done = Signal() # loop condition
+		self.comb += done.eq(res_struct >= num_words)
+		last_read = Signal(wordsize)
 
 		fsm = FSM()
 		self.submodules += fsm
@@ -66,36 +63,14 @@ class DesignTemplate(VirtmemWrapper):
 		# execute function loop
 		fsm.act("GET_DATA", # read loop data from virtual memory
 			self.virtmem.virt_addr.eq(read_adr),
+			self.virtmem.num_words.eq(num_words),
 			self.virtmem.req.eq(1),
 			self.virtmem.write_enable.eq(0),
-			If(self.virtmem.done,
-				self.virtmem.req.eq(0),
-				NextValue(read_data, self.virtmem.data_read),
-				NextState("CALCULATE")
-			)
-		)
-		fsm.act("CALCULATE",
-			##TODO: loop body
-			NextState("PUT_DATA")
-		)
-		fsm.act("PUT_DATA", # write loop modifications to virtual memory
-			self.virtmem.virt_addr.eq(write_adr),
-			self.virtmem.req.eq(1),
-			self.virtmem.write_enable.eq(1),
-			If(self.virtmem.done,
-				self.virtmem.req.eq(0),
-				If(~done, # loop
-					NextState("GET_DATA")
-				).Else( # end function body
-					NextState("FLUSH")
-				)
-			)
-		)
-
-		# flush virtmem cache modifications to main memory
-		fsm.act("FLUSH",
-			self.virtmem.flush_all.eq(1),
-			If(self.virtmem.done,
+			If(self.virtmem.data_valid,
+				NextValue(res_struct, res_struct + 1),
+				NextValue(last_read, self.virtmem.data_read),
+			),
+			If(done,
 				NextState("TRANSMIT_INIT")
 			)
 		)
@@ -121,6 +96,8 @@ class DesignTemplate(VirtmemWrapper):
 			)
 		fsm.act("TRANSMIT" + str(max(1, res_struct_size//c_pci_data_width)), #transmission finished
 			##TODO: reset loop variables
+			NextValue(arg_struct, 0),
+			NextValue(res_struct, 0),
 			NextState("IDLE")
 		)
 
@@ -134,7 +111,7 @@ def main():
 	combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
 	combined_interface_rx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
 
-	m = DesignTemplate(combined_interface_rx=combined_interface_rx, combined_interface_tx=combined_interface_tx, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
+	m = Count(combined_interface_rx=combined_interface_rx, combined_interface_tx=combined_interface_tx, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
 	m.cd_sys.clk.name_override="clk"
 	m.cd_sys.rst.name_override="rst"
 	for name in "ack", "last", "len", "off", "data", "data_valid", "data_ren":

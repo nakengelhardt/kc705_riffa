@@ -44,25 +44,31 @@ class Virtmem(Module):
 		self.data_tx = tx1
 		self.req = Signal()
 		self.virt_addr = Signal(ptrsize)
+		self.num_words = Signal(ptrsize)
 		self.data_read = Signal(wordsize)
+		self.data_valid = Signal()
 		self.done = Signal()
 		self.data_write = Signal(wordsize)
 		self.write_enable = Signal()
+		self.write_ack = Signal()
 		self.flush_all = Signal()
 		###
 
 		#register I/Os
 		virt_addr_p = Signal(ptrsize)
 		req_p = Signal()
+		num_words_p = Signal(ptrsize)
 		data_write_p = Signal(wordsize)
 		write_enable_p = Signal()
 		flush_all_p = Signal()
 
-		self.sync += virt_addr_p.eq(self.virt_addr), req_p.eq(self.req), data_write_p.eq(self.data_write), write_enable_p.eq(self.write_enable), flush_all_p.eq(self.flush_all)
+		self.sync += virt_addr_p.eq(self.virt_addr), req_p.eq(self.req), data_write_p.eq(self.data_write), write_enable_p.eq(self.write_enable), flush_all_p.eq(self.flush_all), num_words_p.eq(self.num_words)
 
 		self.done_n = Signal()
-		self.sync += self.done.eq(self.done_n)
+		self.data_valid_n = Signal()
+		self.sync += self.done.eq(self.done_n), self.data_valid.eq(self.data_valid_n)
 
+		self.virt_addr_internal = Signal(ptrsize)
 
 		#constant definitions
 		memorywidth = max(c_pci_data_width, wordsize)
@@ -105,7 +111,7 @@ class Virtmem(Module):
 		found = Signal()
 		cache_hit_en = Signal()
 
-		self.comb += [If((page_tags[i] == virt_addr_p[page_tag_off:ptrsize]) & page_valid[i], found.eq(1), pg_adr.eq(i)) for i in range(npagesincache)]
+		self.comb += [If((page_tags[i] == self.virt_addr_internal[page_tag_off:ptrsize]) & page_valid[i], found.eq(1), pg_adr.eq(i)) for i in range(npagesincache)]
 		
 		# replacement policy
 		self.submodules.replacement_policy = replacementpolicies.TrueLRU(npages=npagesincache)
@@ -133,6 +139,16 @@ class Virtmem(Module):
 		num_retransmissions = Signal(8)
 		max_retransmissions = 1
 
+		word_select = Signal(word_adr_nbits)
+		burst_end_addr = Signal(ptrsize)
+		virt_addr_reg = Signal(ptrsize)
+		next_virt_addr = Signal(ptrsize)
+		use_input_virt_addr = Signal()
+		self.comb += If(use_input_virt_addr, self.virt_addr_internal.eq(virt_addr_p)).Else(self.virt_addr_internal.eq(virt_addr_reg))
+
+		last_word = Signal()
+		crossed_page_boundary = Signal()
+
 		page_control_fsm.act("IDLE", #0
 			#reset internal registers
 			NextValue(rxcount, 0),
@@ -140,8 +156,12 @@ class Virtmem(Module):
 			NextValue(wordcount, 0),
 			NextValue(rlen, 0),
 			NextValue(num_retransmissions, 0),
+			use_input_virt_addr.eq(1),
 			# react to inputs
 			If(req_p,
+				NextValue(virt_addr_reg, virt_addr_p),
+				NextValue(next_virt_addr, virt_addr_p + (1 << byte_adr_nbits)),
+				NextValue(burst_end_addr, virt_addr_p + (num_words_p << byte_adr_nbits)),
 				If(found,
 					If(write_enable_p,
 						NextState("WRITE_DATA")
@@ -243,7 +263,7 @@ class Virtmem(Module):
 			)
 		)
 		page_fetch_cmd = Signal(128)
-		self.comb += page_fetch_cmd[64: 128].eq(0x6E706E706E706E70), page_fetch_cmd[page_tag_off: 64].eq(virt_addr_p[page_tag_off:])
+		self.comb += page_fetch_cmd[64: 128].eq(0x6E706E706E706E70), page_fetch_cmd[page_tag_off: 64].eq(self.virt_addr_internal[page_tag_off:])
 		page_control_fsm.act("TX_PAGE_FETCH_CMD", #6
 			self.cmd_tx.start.eq(1),
 			self.cmd_tx.len.eq(4),
@@ -282,7 +302,7 @@ class Virtmem(Module):
 				wr_port.we.eq(1 << rxcount[num_tx_off: num_tx_off + word_adr_nbits]),
 				NextValue(rxcount, rxcount + c_pci_data_width//32),
 				If((rxcount >= (pagesize*8 - c_pci_data_width)//32) | (rxcount >= rlen - c_pci_data_width//32),
-					NextValue(page_tags[pg_to_replace], virt_addr_p[page_tag_off: ptrsize]),
+					NextValue(page_tags[pg_to_replace], self.virt_addr_internal[page_tag_off: ptrsize]),
 					NextValue(page_valid[pg_to_replace], 1),
 					If(write_enable_p,
 						NextState("WRITE_DATA")
@@ -294,29 +314,73 @@ class Virtmem(Module):
 		)
 		page_control_fsm.act("GET_DATA", #10
 			cache_hit_en.eq(1),
-			rd_port.adr.eq(Cat(virt_addr_p[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
+			rd_port.adr.eq(Cat(self.virt_addr_internal[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
 			rd_port.re.eq(1),
+			NextValue(word_select, self.virt_addr_internal[word_adr_off:word_adr_off+word_adr_nbits]),
+			self.data_valid_n.eq(1),
 			self.done_n.eq(1),
+			NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits)),
+			NextValue(next_virt_addr, next_virt_addr + (1 << byte_adr_nbits)),
+			NextValue(last_word, next_virt_addr >= burst_end_addr),
+			NextValue(crossed_page_boundary, virt_addr_reg[page_tag_off:] != next_virt_addr[page_tag_off:]),
 			NextState("SERVE_DATA")
 		)
 		page_control_fsm.act("SERVE_DATA", #11
-			[If(virt_addr_p[word_adr_off:word_adr_off+word_adr_nbits] == i, self.data_read.eq(rd_port.dat_r[i*wordsize:(i+1)*wordsize])) for i in range(c_pci_data_width//wordsize)]
+			[If(word_select == i, self.data_read.eq(rd_port.dat_r[i*wordsize:(i+1)*wordsize])) for i in range(c_pci_data_width//wordsize)]
 			if c_pci_data_width > wordsize else
 			self.data_read.eq(rd_port.dat_r),
-			NextState("WAIT_1")
+			If(~last_word,
+				If(crossed_page_boundary,
+					cache_hit_en.eq(1),
+					rd_port.adr.eq(Cat(self.virt_addr_internal[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
+					rd_port.re.eq(1),
+					NextValue(word_select, self.virt_addr_internal[word_adr_off:word_adr_off+word_adr_nbits]),
+					NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits)),
+					NextValue(next_virt_addr, next_virt_addr + (1 << byte_adr_nbits)),
+					NextValue(last_word, next_virt_addr >= burst_end_addr),
+					NextValue(crossed_page_boundary, virt_addr_reg[page_tag_off:] != next_virt_addr[page_tag_off:]),
+					self.data_valid_n.eq(1),
+				).Else(
+					If(found,
+						NextState("GET_DATA")
+					).Else(
+						If(page_dirty[pg_to_replace],
+							NextState("TX_DIRTY_PAGE_INIT")
+						).Else(
+							NextState("TX_PAGE_FETCH_CMD")
+						)
+					)
+				)
+			).Else(
+				NextState("WAIT_1")
+			)
 		)
 		page_control_fsm.act("WRITE_DATA", #12
-			cache_hit_en.eq(1),
-			wr_port.dat_w.eq(Cat([data_write_p for i in range(words_per_line)]))
-			if c_pci_data_width > wordsize else
-			wr_port.dat_w.eq(data_write_p),
-			wr_port.we.eq(1 << virt_addr_p[word_adr_off:word_adr_off+word_adr_nbits])
-			if c_pci_data_width > wordsize else
-			[wr_port.we[i].eq(1) for i in range(words_per_line)],
-			wr_port.adr.eq(Cat(virt_addr_p[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
-			NextValue(page_dirty[pg_adr], 1),
-			self.done_n.eq(1),
-			NextState("WAIT_1")
+			If(found,
+				cache_hit_en.eq(1),
+				wr_port.dat_w.eq(Cat([data_write_p for i in range(words_per_line)]))
+				if c_pci_data_width > wordsize else
+				wr_port.dat_w.eq(data_write_p),
+				wr_port.we.eq(1 << self.virt_addr_internal[word_adr_off:word_adr_off+word_adr_nbits])
+				if c_pci_data_width > wordsize else
+				[wr_port.we[i].eq(1) for i in range(words_per_line)],
+				wr_port.adr.eq(Cat(self.virt_addr_internal[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
+				NextValue(page_dirty[pg_adr], 1),
+				self.write_ack.eq(1),
+				If((virt_addr_reg + (1 << byte_adr_nbits)) < burst_end_addr,
+					NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits))
+				).Else(
+					self.done_n.eq(1),
+					NextState("WAIT_1")
+				)
+			).Else(
+				If(page_dirty[pg_to_replace],
+					NextState("TX_DIRTY_PAGE_INIT")
+				).Else(
+					NextState("TX_PAGE_FETCH_CMD")
+				)
+			)
+			
 		)
 		page_control_fsm.act("RX_CMD", #13
 			self.cmd_rx.ack.eq(1),
