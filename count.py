@@ -33,7 +33,7 @@ class Count(VirtmemWrapper):
 
 		# function variables
 		done = Signal() # loop condition
-		self.comb += done.eq(res_struct >= num_words)
+		self.comb += done.eq(res_struct >= num_words - 1)
 		last_read = Signal(wordsize)
 
 		fsm = FSM()
@@ -57,16 +57,17 @@ class Count(VirtmemWrapper):
 			)
 		fsm.act("RECEIVE" + str(max(1, arg_struct_size//c_pci_data_width)),
 			##TODO: break up arg struct into members, pre-loop initializations
-			NextState("GET_DATA")
+			NextState("PUT_DATA")
 		)
 
 		# execute function loop
-		fsm.act("GET_DATA", # read loop data from virtual memory
+		fsm.act("PUT_DATA", # read loop data from virtual memory
 			self.virtmem.virt_addr.eq(read_adr),
 			self.virtmem.num_words.eq(num_words),
 			self.virtmem.req.eq(1),
-			self.virtmem.write_enable.eq(0),
-			If(self.virtmem.data_valid,
+			self.virtmem.write_enable.eq(1),
+			self.virtmem.data_write.eq(res_struct),
+			If(self.virtmem.write_ack,
 				NextValue(res_struct, res_struct + 1),
 				NextValue(last_read, self.virtmem.data_read),
 			),

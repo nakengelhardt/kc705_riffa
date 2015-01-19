@@ -35,7 +35,7 @@ class TB(Module):
 	def gen_simulation(self, selfp):
 		# memory area to work on
 		baseaddr = 0x222000 ## TODO
-		size = 4096 ## TODO
+		size = 64 ## TODO
 		# function argument to send (as list of 32 bit words)
 		arg_struct = []
 		arg_struct.extend(riffa.unpack(baseaddr, 2))
@@ -43,7 +43,7 @@ class TB(Module):
 		# expected return value (as list of 32 bit words)
 		expected_ret = [size] ## TODO 
 		# expected memory modifications (in memory words of size 'wordsize')
-		expected_results = [generate_data(baseaddr + i << log2_int(self.wordsize//8)) for i in range(size)] ## TODO
+		expected_results = [i for i in range(size)] ## TODO
 
 		# send arguments to DUT
 		yield from riffa.channel_write(selfp.simulator, self.rx, arg_struct)
@@ -56,19 +56,22 @@ class TB(Module):
 			## TODO
 			print("Wrong return value! Expected " + str(expected_ret) + ", received " + str(ret))
 
+		yield from self.tbmem.send_flush_command(selfp)
+
 		# check memory modifications
 		num_errors = 0
 		for i in range(size):
 			# address "i"th word in range
-			addr = baseaddr + i << log2_int(self.wordsize//8)
+			addr = baseaddr + (i << log2_int(self.wordsize//8))
 			# compare to expected
+			# print(hex(addr) + ": " + str(self.tbmem.read_mem(addr)))
 			if self.tbmem.read_mem(addr) != expected_results[i]:
 				num_errors += 1
 				# print a few errors but not too many
 				if num_errors <= 10:
 					print(hex(addr) + ": " + str(self.tbmem.read_mem(addr)) + " (expected " + str(expected_results[i]) + ")")
 		if num_errors > 10:
-			print("And " + str(num_errors-10) + " more.")
+			print(str(num_errors) + " errors total.")
 		if num_errors == 0:
 			print("Test passed.")
 

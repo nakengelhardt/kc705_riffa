@@ -88,7 +88,7 @@ class TBMemory(Module):
 							num_modified += 1
 							self.modified[addr+i*(self.wordsize//8)] = words[i]
 							if num_modified < 10:
-								print(hex(addr+i*(self.wordsize//8)) + ": " + str(words[i]))
+								print(hex(addr+i*(self.wordsize//8)) + ": " + hex(words[i]))
 					if num_modified >= 10:
 						print("and more... " + str(num_modified) + " total.")
 					ret = []
@@ -175,9 +175,9 @@ class TB(Module):
 				while not selfp.dut.virtmem.data_valid:
 					yield
 			if we:
-				print("Wrote data " + str(generate_data(addr) + 1) + " to address " + hex(addr))
+				print("Wrote data " + hex(generate_data(addr) + 1) + " to address " + hex(addr))
 			else:
-				print("Read data " + str(selfp.dut.virtmem.data_read) + " from address " + hex(addr))
+				print("Read data " + hex(selfp.dut.virtmem.data_read) + " from address " + hex(addr))
 		selfp.dut.virtmem.virt_addr = 0
 		selfp.dut.virtmem.req = 0
 		selfp.dut.virtmem.data_write = 0
@@ -217,6 +217,7 @@ class TB(Module):
 		internal_address = addr
 		words_sent = 0
 		while words_sent < num_words:
+			selfp.dut.virtmem.data_write = words_sent
 			yield
 			if selfp.dut.virtmem.write_ack:
 				words_sent += 1
