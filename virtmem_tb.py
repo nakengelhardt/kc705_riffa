@@ -168,12 +168,8 @@ class TB(Module):
 				selfp.dut.virtmem.data_write = generate_data(addr) + 1
 			yield
 			selfp.dut.virtmem.req = 0
-			if we:
-				while not selfp.dut.virtmem.write_ack:
-					yield
-			else:
-				while not selfp.dut.virtmem.data_valid:
-					yield
+			while not selfp.dut.virtmem.done:
+				yield
 			if we:
 				print("Wrote data " + hex(generate_data(addr) + 1) + " to address " + hex(addr))
 			else:

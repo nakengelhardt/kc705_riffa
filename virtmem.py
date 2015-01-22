@@ -133,6 +133,8 @@ class Virtmem(Module):
 		burst_end_addr = Signal(ptrsize)
 		virt_addr_reg = Signal(ptrsize)
 		next_virt_addr = Signal(ptrsize)
+		prev_virt_addr = Signal(ptrsize)
+		prev_pg_adr = Signal(page_adr_nbits)
 		use_input_virt_addr = Signal()
 		self.comb += If(use_input_virt_addr, self.virt_addr_internal.eq(virt_addr_p)).Else(self.virt_addr_internal.eq(virt_addr_reg))
 
@@ -212,29 +214,50 @@ class Virtmem(Module):
 		)
 		page_control_fsm.act("WRITE_DATA", 
 			If(found,
-				cache_hit_en.eq(1),
-				wr_port.dat_w.eq(Cat([data_write_p for i in range(words_per_line)]))
-				if c_pci_data_width > wordsize else
-				wr_port.dat_w.eq(data_write_p),
-				wr_port.we.eq(1 << self.virt_addr_internal[word_adr_off:word_adr_off+word_adr_nbits])
-				if c_pci_data_width > wordsize else
-				[wr_port.we[i].eq(1) for i in range(words_per_line)],
-				wr_port.adr.eq(Cat(self.virt_addr_internal[line_adr_off:line_adr_off + line_adr_nbits], pg_adr)),
-				NextValue(page_dirty[pg_adr], 1),
 				self.write_ack.eq(1),
-				If((virt_addr_reg + (1 << byte_adr_nbits)) < burst_end_addr,
-					NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits))
-				).Else(
-					NextState("DONE")
-				)
+				cache_hit_en.eq(1),
+				NextValue(page_dirty[pg_adr], 1),
+				NextValue(prev_virt_addr, virt_addr_reg),
+				NextValue(prev_pg_adr, pg_adr),
+				NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits)),
+				NextState("WRITE_DATA_2")
 			).Else(
 				If(page_dirty[pg_to_replace],
 					NextState("PAGE_WB_INIT")
 				).Else(
 					NextState("PAGE_FETCH_INIT")
 				)
-			)	
+			)
 		)
+		page_control_fsm.act("WRITE_DATA_2",
+			wr_port.dat_w.eq(Cat([data_write_p for i in range(words_per_line)]))
+			if c_pci_data_width > wordsize else
+			wr_port.dat_w.eq(data_write_p),
+			wr_port.we.eq(1 << prev_virt_addr[word_adr_off:word_adr_off+word_adr_nbits])
+			if c_pci_data_width > wordsize else
+			[wr_port.we[i].eq(1) for i in range(words_per_line)],
+			wr_port.adr.eq(Cat(prev_virt_addr[line_adr_off:line_adr_off + line_adr_nbits], prev_pg_adr)),
+
+			If(virt_addr_reg < burst_end_addr,
+				If(found,
+					self.write_ack.eq(1),
+					cache_hit_en.eq(1),
+					NextValue(page_dirty[pg_adr], 1),
+					NextValue(prev_virt_addr, virt_addr_reg),
+					NextValue(prev_pg_adr, pg_adr),
+					NextValue(virt_addr_reg, virt_addr_reg + (1 << byte_adr_nbits))
+				).Else(
+					If(page_dirty[pg_to_replace],
+						NextState("PAGE_WB_INIT")
+					).Else(
+						NextState("PAGE_FETCH_INIT")
+					)
+				)	
+			).Else(
+				NextState("DONE")
+			)
+		)
+
 
 		page_control_fsm.act("PAGE_FETCH_INIT",
 			self.pagetransferrer.virt_addr.eq(0),
