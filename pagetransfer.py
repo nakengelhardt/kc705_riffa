@@ -29,6 +29,21 @@ class PageTransferrer(Module):
 
 		##
 
+		# fix start signals
+		cmd_rx_start_prev = Signal()
+		data_rx_start_prev = Signal()
+
+		self.sync += cmd_rx_start_prev.eq(self.cmd_rx.start), data_rx_start_prev.eq(self.data_rx.start)
+
+		cmd_rx_transaction_requested = Signal()
+		data_rx_transaction_requested = Signal()
+
+		cmd_rx_transaction_ack = Signal()
+		data_rx_transaction_ack = Signal()
+
+		self.sync += If(cmd_rx_transaction_ack, cmd_rx_transaction_requested.eq(0)).Elif(~cmd_rx_transaction_requested & (self.cmd_rx.start == 1) & (cmd_rx_start_prev == 0), cmd_rx_transaction_requested.eq(1))
+		self.sync += If(data_rx_transaction_ack, data_rx_transaction_requested.eq(0)).Elif(~data_rx_transaction_requested & (self.data_rx.start == 1) & (data_rx_start_prev == 0), data_rx_transaction_requested.eq(1))
+
 
 		# constant definitions
 		memorywidth = max(c_pci_data_width, wordsize)
@@ -175,13 +190,14 @@ class PageTransferrer(Module):
 			)
 		fsm.act("RX_WAIT", #8
 			NextValue(rxcount, 0),
-			If(self.data_rx.start,
+			If(data_rx_transaction_requested,
 				NextValue(rlen, self.data_rx.len),
 				NextState("RX_PAGE")
 			)
 		)
 		fsm.act("RX_PAGE", #9
 			self.data_rx.ack.eq(1),
+			data_rx_transaction_ack.eq(1),
 			wr_port.dat_w.eq(Cat([self.data_rx.data for i in range(num_tx_per_word)])),
 			wr_port.adr[0:line_adr_nbits].eq(rxcount[pcie_word_adr_nbits: pcie_word_adr_nbits + line_adr_nbits]),
 			wr_port.adr[-page_adr_nbits:].eq(page_addr_internal),
