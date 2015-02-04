@@ -70,7 +70,7 @@ class TB(Module):
 		for row in expectedC:
 			print(row)
 
-		def run_matmul():
+		def run_matmul(run):
 			# send arguments to DUT
 			yield from riffa.channel_write(selfp.simulator, self.rx, arg_struct)
 
@@ -94,18 +94,18 @@ class TB(Module):
 						if num_errors <= 10:
 							print(hex(addr) + ": " + str(self.tbmem.read_mem(addr)) + " (expected " + str(expectedC[i][j]) + ")")
 			if num_errors > 10:
-				print("And " + str(num_errors-10) + " more.")
+				print(str(num_errors) + " errors total.")
 
 			yield
 
 		num_runs = 3
 
 		for run in range(num_runs):
-			yield from run_matmul()
+			yield from run_matmul(run)
 
 		self.tbmem.send_invalidate_command(selfp)
 
-		yield from run_matmul()
+		# yield from run_matmul()
 
 
 if __name__ == "__main__":

@@ -68,8 +68,7 @@ class Count(VirtmemWrapper):
 			self.virtmem.write_enable.eq(1),
 			self.virtmem.data_write.eq(res_struct),
 			If(self.virtmem.write_ack,
-				NextValue(res_struct, res_struct + 1),
-				NextValue(last_read, self.virtmem.data_read),
+				NextValue(res_struct, res_struct + 1)
 			),
 			If(done,
 				NextState("TRANSMIT_INIT")
