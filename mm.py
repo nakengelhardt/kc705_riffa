@@ -132,10 +132,14 @@ class MatMul(VirtmemWrapper):
 			self.virtmem.virt_addr.eq(currA),
 			self.virtmem.req.eq(1),
 			self.virtmem.write_enable.eq(0),
-			If(self.virtmem.done,
-				self.virtmem.req.eq(0),
+			If(self.virtmem.data_valid,
 				NextValue(Aik0, self.virtmem.data_read),
 				NextValue(currA, currA + incrA),
+				NextState("GET_A2")
+			)
+		)
+		fsm.act("GET_A2",
+			If(self.virtmem.done,
 				NextState("GET_B")
 			)
 		)
@@ -143,20 +147,23 @@ class MatMul(VirtmemWrapper):
 			self.virtmem.virt_addr.eq(currB),
 			self.virtmem.req.eq(1),
 			self.virtmem.write_enable.eq(0),
-			If(self.virtmem.done,
-				self.virtmem.req.eq(0),
+			If(self.virtmem.data_valid,
 				NextValue(Bkj0, self.virtmem.data_read),
 				NextValue(currB, currB + incrB),
 				NextValue(k, k + 1),
 				calc_enable_n.eq(1),
 				If(k < dim_k,
-					NextState("GET_A")
+					NextState("GET_B2")
 				).Else(
 					last_in_n.eq(1),
 					NextState("WAIT_RES")
 				)
 			)
 		)
+		fsm.act("GET_B2",
+			NextState("GET_A")
+		)
+
 		fsm.act("WAIT_RES", #7
 			NextValue(Aik0, 0),
 			NextValue(Bkj0, 0),
