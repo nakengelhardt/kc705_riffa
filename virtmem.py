@@ -395,3 +395,47 @@ class VirtmemWrapper(GenericRiffa):
 		rx1, tx1 = self.get_channel(1)
 		self.submodules.virtmem = Virtmem(rx0, tx0, rx1, tx1, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
 
+def main():
+	if len(sys.argv) < 4:
+		print("Usage: " + sys.argv[0] + " c_pci_data_width wordsize ptrsize")
+		return
+	c_pci_data_width = int(sys.argv[1])
+	wordsize = int(sys.argv[2])
+	ptrsize = int(sys.argv[3])
+	tx0 = riffa.Interface(data_width=c_pci_data_width)
+	rx0 = riffa.Interface(data_width=c_pci_data_width)
+	tx1 = riffa.Interface(data_width=c_pci_data_width)
+	rx1 = riffa.Interface(data_width=c_pci_data_width)
+
+	m = Virtmem(rx0, tx0, rx1, tx1, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
+
+	m.clock_domains.cd_sys = ClockDomain()
+	m.cd_sys.clk.name_override="clk"
+	m.cd_sys.rst.name_override="rst"
+	for name in "ack", "last", "len", "off", "data", "data_valid", "data_ren":
+		getattr(rx0, name).name_override="chnl_rx0_{}".format(name)
+		getattr(tx0, name).name_override="chnl_tx0_{}".format(name)
+		getattr(rx1, name).name_override="chnl_rx1_{}".format(name)
+		getattr(tx1, name).name_override="chnl_tx1_{}".format(name)
+	rx0.start.name_override="chnl_rx0"
+	tx0.start.name_override="chnl_tx0"
+	rx1.start.name_override="chnl_rx1"
+	tx1.start.name_override="chnl_tx1"
+	m.rx0_clk = Signal()
+	m.tx0_clk = Signal()
+	m.rx0_clk.name_override="chnl_rx0_clk"
+	m.tx0_clk.name_override="chnl_tx0_clk"
+	m.rx1_clk = Signal()
+	m.tx1_clk = Signal()
+	m.rx1_clk.name_override="chnl_rx1_clk"
+	m.tx1_clk.name_override="chnl_tx1_clk"
+
+	print(verilog.convert(m, name="top", ios={getattr(rx0, name) for name in ["start", "ack", "last", "len", "off", "data", "data_valid", "data_ren"]} \
+		| {getattr(tx0, name) for name in ["start", "ack", "last", "len", "off", "data", "data_valid", "data_ren"]} \
+		| {getattr(rx1, name) for name in ["start", "ack", "last", "len", "off", "data", "data_valid", "data_ren"]} \
+		| {getattr(tx1, name) for name in ["start", "ack", "last", "len", "off", "data", "data_valid", "data_ren"]} \
+		| {m.rx0_clk, m.tx0_clk, m.rx1_clk, m.tx1_clk, m.cd_sys.clk, m.cd_sys.rst} ))
+
+
+if __name__ == '__main__':
+	main()
