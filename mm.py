@@ -245,13 +245,18 @@ class MatMul(VirtmemWrapper):
 
 def main():
 	c_pci_data_width = 128
-	num_chnls = 3
+	num_chnls = 4
 	wordsize = 16
 	ptrsize = 64
 	combined_interface_tx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
 	combined_interface_rx = riffa.Interface(data_width=c_pci_data_width, num_chnls=num_chnls)
 
 	m = MatMul(combined_interface_rx=combined_interface_rx, combined_interface_tx=combined_interface_tx, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
+
+	# add a loopback to test responsiveness
+	test_rx, test_tx = m.get_channel(num_chnls - 1)
+	m.comb += test_rx.connect(test_tx)
+
 	m.cd_sys.clk.name_override="clk"
 	m.cd_sys.rst.name_override="rst"
 	for name in "ack", "last", "len", "off", "data", "data_valid", "data_ren":
