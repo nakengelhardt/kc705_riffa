@@ -5,27 +5,8 @@ from migen.genlib.fsm import FSM, NextState, NextValue
 
 from migen.fhdl import verilog
 
-import riffa, replacementpolicies, pagetransfer
-
-class GenericRiffa(Module):
-	def __init__(self, combined_interface_rx, combined_interface_tx, c_pci_data_width=32, drive_clocks=True):
-		self.combined_interface_tx = combined_interface_tx
-		self.combined_interface_rx = combined_interface_rx
-		self.c_pci_data_width = c_pci_data_width
-		self.submodules.channelsplitter = riffa.ChannelSplitter(combined_interface_rx, combined_interface_tx)
-
-		num_chnls = flen(combined_interface_rx.start)
-		if drive_clocks:
-			self.rx_clk = Signal(num_chnls)
-			self.tx_clk = Signal(num_chnls)
-			self.comb += [ self.rx_clk[i].eq(ClockSignal()) for i in range(num_chnls) ]
-			self.comb += [ self.tx_clk[i].eq(ClockSignal()) for i in range(num_chnls) ]
-
-
-	def get_channel(self, i):
-		return self.channelsplitter.get_channel(i)
-
-
+import replacementpolicies, pagetransfer
+from riffa import GenericRiffa, Interface
 
 class Virtmem(Module):
 
@@ -388,9 +369,6 @@ class VirtmemWrapper(GenericRiffa):
 	def __init__(self, combined_interface_rx, combined_interface_tx, c_pci_data_width=32, wordsize=32, ptrsize=64, drive_clocks=True):
 		GenericRiffa.__init__(self, combined_interface_rx=combined_interface_rx, combined_interface_tx=combined_interface_tx, c_pci_data_width=c_pci_data_width, drive_clocks=drive_clocks)
 
-		if drive_clocks:
-			self.clock_domains.cd_sys = ClockDomain()
-
 		rx0, tx0 = self.get_channel(0)
 		rx1, tx1 = self.get_channel(1)
 		self.submodules.virtmem = Virtmem(rx0, tx0, rx1, tx1, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
@@ -402,10 +380,10 @@ def main():
 	c_pci_data_width = int(sys.argv[1])
 	wordsize = int(sys.argv[2])
 	ptrsize = int(sys.argv[3])
-	tx0 = riffa.Interface(data_width=c_pci_data_width)
-	rx0 = riffa.Interface(data_width=c_pci_data_width)
-	tx1 = riffa.Interface(data_width=c_pci_data_width)
-	rx1 = riffa.Interface(data_width=c_pci_data_width)
+	tx0 = Interface(data_width=c_pci_data_width)
+	rx0 = Interface(data_width=c_pci_data_width)
+	tx1 = Interface(data_width=c_pci_data_width)
+	rx1 = Interface(data_width=c_pci_data_width)
 
 	m = Virtmem(rx0, tx0, rx1, tx1, c_pci_data_width=c_pci_data_width, wordsize=wordsize, ptrsize=ptrsize)
 

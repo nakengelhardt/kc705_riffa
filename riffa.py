@@ -53,6 +53,24 @@ class ChannelSplitter(Module):
 	def get_channel(self, i):
 		return self.subchannels[i]
 
+class GenericRiffa(Module):
+	def __init__(self, combined_interface_rx, combined_interface_tx, c_pci_data_width=32, drive_clocks=True):
+		self.combined_interface_tx = combined_interface_tx
+		self.combined_interface_rx = combined_interface_rx
+		self.c_pci_data_width = c_pci_data_width
+		self.submodules.channelsplitter = ChannelSplitter(combined_interface_rx, combined_interface_tx)
+
+		num_chnls = flen(combined_interface_rx.start)
+		if drive_clocks:
+			self.clock_domains.cd_sys = ClockDomain()
+			self.rx_clk = Signal(num_chnls)
+			self.tx_clk = Signal(num_chnls)
+			self.comb += [ self.rx_clk[i].eq(ClockSignal()) for i in range(num_chnls) ]
+			self.comb += [ self.tx_clk[i].eq(ClockSignal()) for i in range(num_chnls) ]
+
+
+	def get_channel(self, i):
+		return self.channelsplitter.get_channel(i)
 
 def pack(words):
 	data = 0
@@ -107,6 +125,7 @@ def channel_read(sim, channel):
 	sim.wr(channel.ack, 1)
 	yield
 	sim.wr(channel.ack, 0)
+	sim.wr(channel.data_ren, 1)
 	yield
 	while nrecvd < nwords:
 		# print("Waiting for data word #" + str(nrecvd))
@@ -116,8 +135,6 @@ def channel_read(sim, channel):
 		# print(("Channel "+str(channel.channel_number)+": " if channel.channel_number != None else "") + "Received data " + str(unpack(data, min(channelwidth, nwords-nrecvd))) + " ({0:032x})".format(data))
 		words.extend(unpack(data, min(channelwidth, nwords-nrecvd)))
 		nrecvd += channelwidth
-		sim.wr(channel.data_ren, 1)
 		yield
-		sim.wr(channel.data_ren, 0)
-		yield
+	sim.wr(channel.data_ren, 0)
 	return words
